@@ -1,19 +1,37 @@
+/*
+ *  EXAMPLES
+ *
+ *  Snail (simple language, good for looking at the grammar)
+ *  http://www.cs.rpi.edu/~moorthy/courses/modcomp/projects/project2/project2.pdf
+ *
+ *  Symbol table example
+ *  http://dinosaur.compilertools.net/bison/bison_5.html#SEC29
+ *
+ *  Ansi C (very complex, useful for optimizations)
+ *  http://www.lysator.liu.se/c/ANSI-C-grammar-y.html
+ *
+ */
+
+
 %{
-
-/* http://www.lysator.liu.se/c/ANSI-C-grammar-y.html */
-
-#include <stdlib.h>
-#include <string.h>
+#include <stdlib.h>     /* TODO revise includes when the work is over */ 
+#include <string.h>     /*      to remove what is not necessary       */
 #include <ctype.h>
 #include <stdio.h>
+
+/* Global string containing the final output. */
+char *output = "";
 %}
 
-/* values passed by lex */
+
+/* Fields passed by lex into struct yylval. */
 %union {
         char* lexeme;
         double value;
 }
 
+
+/* Terminals. */
 %token VAR
 %token IF
 %token THEN
@@ -23,52 +41,139 @@
 %token <lexeme> ID
 %token <value>  NUM
 
-%type <value> expr      /* expr has type double */
 
+/* Declarements of typed non-terminals. */
+%type <value> expr
+
+
+/* Declarements of operators in increasing order of precedence. */
+%left '='
 %left '-' '+'
 %left '*' '/'
 %right UMINUS
-%left '='       /* used for assignments */
 
 
-%start program  /* scope of the language */
+/* Definition of the scope of the language. */
+%start program
 
+
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 %%
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+
+/* Scope of the language. */
 program
-        : block program         {/* ??? */}
+        : block program
+                {
+                        printf ("%s", output);
+                }
         ;
 
+
+/* Code block. */
 block
-        : '(' stmtlist ')'     {/* ??? */}
+        : '(' stmtlist ')'
+                {
+                        /* TODO */
+                }
         ;
 
+
+/* List of statements. */
 stmtlist
-        : stmt stmtlist         {/* ??? */}
-        | stmt                  {/* ??? */}
+        : stmtlist stmt 
+                {
+                        /* TODO */
+                }
+
+        | stmt
+                {
+                        /* TODO */
+                }
         ;
 
+
+/* Single statement. */
 stmt
-        : assignment                    {/* ??? */}
-        | IF expr THEN block else       {/* ??? */}
-        | WHILE expr block END          {/* ??? */}
+        : assignment
+                {
+                        /* TODO */
+                }
+
+        | if
+                {
+                        /* TODO */
+                }
+
+        | while
+                {
+                        /* TODO */
+                }
         ;
 
-else
-        : ELSE block END        {/* ??? */}
-        | END                   {/* ??? */}
+
+/* Statement if (else)? */
+if
+        : IF expr THEN stmtlist END
+                {
+                        /* TODO */
+                }
+
+        | IF expr THEN stmtlist ELSE stmtlist END
+                {
+                        /* TODO */
+                }
         ;
 
+
+/* Expression */
 expr    
-        : expr '+' expr           {$$ = $1 + $3;}
-        | expr '-' expr           {$$ = $1 - $3;}
-        | expr '*' expr           {$$ = $1 * $3;}
-        | expr '/' expr           {$$ = $1 / $3;}
-        | NUM                     {$$ = $1;}
-        | ID                      {/* ??? */}
-        | '-' expr %prec UMINUS   {$$ = -$2;}
-        | '(' expr ')'            {$$ = $2;}
+        : expr '+' expr
+                {
+                        /* TODO */
+                }
+
+        | expr '-' expr
+                {
+                        /* TODO */
+                }
+
+        | expr '*' expr
+                {
+                        /* TODO */
+                }
+
+        | expr '/' expr
+                {
+                        /* TODO */
+                }
+
+        | NUM
+                {
+                        strcat (output, $1);
+                }
+
+        | ID
+                {
+                        /* TODO */
+                }
+
+        | '-' expr %prec UMINUS
+                {
+                        /* TODO */
+                }
+
+        | '(' expr ')'
+                {
+                        /* TODO */
+                }
         ;
 
+
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 %%
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
 
 #include "lex.yy.c"
