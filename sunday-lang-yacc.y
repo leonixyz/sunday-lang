@@ -18,6 +18,7 @@
 #include <string.h>     /*      to remove what is not necessary       */
 #include <ctype.h>
 #include <stdio.h>
+#include "symbol-table.h"
 
 /* Global string containing the final output. */
 char *output = "";
@@ -32,15 +33,18 @@ char *output = "";
 
 
 /* Terminals. */
+%token SET
 %token VAR
+%token TO
 %token IF
 %token THEN
 %token ELSE
 %token WHILE
+%token DO 
 %token END
 %token <lexeme> ID
 %token <value>  NUM
-
+%token <lexeme> STRING
 
 /* Declarements of typed non-terminals. */
 %type <value> expr
@@ -64,9 +68,18 @@ char *output = "";
 
 /* Scope of the language. */
 program
-        : block program
+        : block
                 {
+                        /* Base case: the scope of the language has been
+                         * reached. The output has to be redirected to a
+                         * file or to stdout.
+                         */
                         printf ("%s", output);
+                }
+
+        | block program
+                {
+                        /* TODO */
                 }
         ;
 
@@ -110,6 +123,25 @@ stmt
                 {
                         /* TODO */
                 }
+
+        | expr
+                {
+                        /* TODO */
+                }
+        ;
+
+
+/* Assignment statement. */
+assignment
+        : SET VAR ID TO expr
+                {
+                        /* TODO */
+                }
+
+        | SET VAR ID TO STRING
+                {
+                        /* TODO */
+                }
         ;
 
 
@@ -127,9 +159,23 @@ if
         ;
 
 
+/* While loop. */
+while
+        : WHILE expr DO stmtlist END
+                {
+                        /* TODO */
+                }
+        ;
+
+
 /* Expression */
 expr    
-        : expr '+' expr
+        : functioncall
+                {
+                        /* TODO */
+                }
+        
+        | expr '+' expr
                 {
                         /* TODO */
                 }
@@ -149,16 +195,6 @@ expr
                         /* TODO */
                 }
 
-        | NUM
-                {
-                        strcat (output, $1);
-                }
-
-        | ID
-                {
-                        /* TODO */
-                }
-
         | '-' expr %prec UMINUS
                 {
                         /* TODO */
@@ -167,6 +203,37 @@ expr
         | '(' expr ')'
                 {
                         /* TODO */
+                }
+
+        | NUM
+                {
+                        char str[80];
+                        sprintf (str, "%lf", $1)
+                        strcat (output, str);
+                }
+
+        | ID
+                {
+                        strcat (output, $1);
+                }
+        
+        | STRING
+                {
+                        strcat (output, $1);
+                }
+
+        | STRING expr
+                {
+                        /* TODO */
+                }
+        ;
+
+
+/* A Function call to an existent C function */
+prefix
+        : ID EXPR
+                {
+                        $1 ($2);
                 }
         ;
 

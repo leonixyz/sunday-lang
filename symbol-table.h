@@ -1,0 +1,6 @@
+#ifndef SUNDAYLANG_SYMBOL_TABLE
+#define SUNDAYLANG_SYMBOL_TABLE
+
+/* TODO */
+
+#endif

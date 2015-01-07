@@ -1,30 +1,38 @@
 #SUNDAY-LANG
 ######yet another programming language
 
-**This is meant to be a final deliverable for the course of Formal Languages and Compilers for the Free University of Bozen. Development is at a very early stage.**
-
------------------------------------
-These features are currently under development:
- - variables (numeric, strings)
- - numeric constants (real)
- - flow control statements (if, if-else, while)
-
-The idea is to create an imperative language that is compiled to C. In this way it's easy to produce real executables by simply calling gcc on the final output of the compiler. This programming language is inspired by AppleScript [http://en.wikipedia.org/wiki/AppleScript].
+The idea is to crete a new imperative language that gets compiled to C. This language is inspired by AppleScript [http://en.wikipedia.org/wiki/AppleScript].
 
 
 This is an example of how the synthax should become:
 ```
-set variable x to 5
+(
+    set variable c to 10
 
-while x > 1
-    set variable x to x - 1
-    print x
-end
+    while c > 1 do
+        set variable c to c - 1
+        print c
+        print "\n"
+    end
 
-if x = 1 then
-    print "countdown terminated"
-else
-    print "an error occurred"
-end
+    if c = 1 then
+        print "countdown terminated"
+    else
+        print "an error occurred"
+    end
+)
+
+(
+    set variable x to 5
+    set variable y to x+2
+    set variable z to cos(y)
+    set variable w to "hello world!"
+
+    print w
+)
+
+(
+    set variable unusedVariable to (1+1+2+3+5+8+13)
+)
 
 ```

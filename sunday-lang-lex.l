@@ -15,17 +15,20 @@ DIGIT   [0-9]
 LETTER  [a-zA-Z]
 
  /* Tokens without associated values */
+SET     set
 VAR     variable
+TO      to
 IF      if
 THEN    then
 ELSE    else
 WHILE   while
+DO      do
 END     end
 
  /* Tokens with associated values */
 NUM     {DIGIT}+(\.{DIGIT}+)?
 ID      {LETTER}({LETTER}|{DIGIT})*
-
+STRING  "([^"]|\\")*"
 
  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 %%
@@ -36,11 +39,14 @@ ID      {LETTER}({LETTER}|{DIGIT})*
 [ ]     {}
 
  /* Tokens without associated values */
+{SET}   {return SET;}
 {VAR}   {return VAR;}
+{TO}    {return TO;}
 {IF}    {return IF;}
 {THEN}  {return THEN;}
 {ELSE}  {return ELSE;}
 {WHILE} {return WHILE;}
+{DO}    {return DO;}
 {END}   {return END;}
 "("     {return '(';}
 ")"     {return ')';}
@@ -52,14 +58,22 @@ ID      {LETTER}({LETTER}|{DIGIT})*
 \n      {return '\n';}
 
  /* Tokens with associated values */
-{NUM}   {
-                yylval.value = atof(yytext);
+{NUM}
+        {
+                yylval.value = atof (yytext);
                 return NUM;
         }
 
-{ID}    {
-                yylval.lexeme = strdup(yytext);
+{ID}
+        {
+                yylval.lexeme = strdup (yytext);
                 return ID;
+        }
+
+{STRING}
+        {
+                yyval.lexeme = strdup (yytext);
+                return STRING;
         }
 
 

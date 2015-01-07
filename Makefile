@@ -1,5 +1,5 @@
-sunday-lang:
+sunday-lang: symbol-table.o
 	flex -l sunday-lang-lex.l
 	yacc -vd sunday-lang-yacc.y
-	gcc y.tab.c -ly 
+	gcc -o sundayc y.tab.c symbol-table.o -ly 
 
