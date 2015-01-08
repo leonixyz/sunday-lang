@@ -7,6 +7,7 @@
 %{
 #include <stdlib.h>
 #include <string.h>
+#include "symbol-table.h"
 %}
 
 
@@ -35,8 +36,8 @@ STRING  "([^"]|\\")*"
  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 
- /* Skip blanks */
-[ ]     {}
+ /* Skip blanks and newlines */
+[ \n]     {}
 
  /* Tokens without associated values */
 {SET}   {return SET;}
@@ -55,30 +56,16 @@ STRING  "([^"]|\\")*"
 "-"     {return '-';}
 "*"     {return '*';}
 "/"     {return '/';}
-\n      {return '\n';}
 
  /* Tokens with associated values */
-{NUM}
-        {
-                yylval.value = atof (yytext);
-                return NUM;
-        }
-
-{ID}
-        {
-                yylval.lexeme = strdup (yytext);
-                return ID;
-        }
-
-{STRING}
-        {
-                yyval.lexeme = strdup (yytext);
-                return STRING;
-        }
+{NUM}    {yylval.value = atof (yytext);return NUM;}
+{ID}     {yylval.lexeme = strdup (yytext);return ID;}
+{STRING} {yylval.lexeme = strdup (yytext);return STRING;}
 
 
  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 %%
  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
 
 

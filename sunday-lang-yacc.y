@@ -21,8 +21,12 @@
 #include "symbol-table.h"
 
 /* Global string containing the final output. */
-char *output = "";
+char output[4096];
 %}
+
+
+/* Print some additional information */
+%error-verbose
 
 
 /* Fields passed by lex into struct yylval. */
@@ -208,8 +212,10 @@ expr
         | NUM
                 {
                         char str[80];
-                        sprintf (str, "%lf", $1)
+                        sprintf (str, "%lf", $1);
                         strcat (output, str);
+                        test (str);
+                        printf ("The symbol table now contains: %s\n", teststr);
                 }
 
         | ID
@@ -230,10 +236,10 @@ expr
 
 
 /* A Function call to an existent C function */
-prefix
-        : ID EXPR
+functioncall
+        : ID expr
                 {
-                        $1 ($2);
+                        //$1 ($2);
                 }
         ;
 
@@ -244,3 +250,15 @@ prefix
 
 
 #include "lex.yy.c"
+
+
+int yyerror (const char *str)
+{
+        fprintf (stderr, "Parse error: %s\n", str);
+}
+
+
+int main ()
+{
+        yyparse ();
+}
