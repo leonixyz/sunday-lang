@@ -7,7 +7,7 @@
 %{
 #include <stdlib.h>
 #include <string.h>
-#include "symbol-table.h"
+#include "include/symbol-table.h"
 %}
 
 

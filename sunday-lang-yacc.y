@@ -18,7 +18,7 @@
 #include <string.h>     /*      to remove what is not necessary       */
 #include <ctype.h>
 #include <stdio.h>
-#include "symbol-table.h"
+#include "include/symbol-table.h"
 
 /* Global string containing the final output. */
 char output[4096];
