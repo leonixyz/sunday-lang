@@ -1,27 +1,14 @@
-/*
- *  EXAMPLES
- *
- *  Snail (simple language, good for looking at the grammar)
- *  http://www.cs.rpi.edu/~moorthy/courses/modcomp/projects/project2/project2.pdf
- *
- *  Symbol table example
- *  http://dinosaur.compilertools.net/bison/bison_5.html#SEC29
- *
- *  Ansi C (very complex, useful for optimizations)
- *  http://www.lysator.liu.se/c/ANSI-C-grammar-y.html
- *
- */
-
-
 %{
 #include <stdlib.h>     /* TODO revise includes when the work is over */ 
 #include <string.h>     /*      to remove what is not necessary       */
 #include <ctype.h>
 #include <stdio.h>
 #include "include/symbol-table.h"
+#include "include/parse-tree.h"
 
-/* Global string containing the final output. */
-char output[4096];
+/* Current root of the parse tree used during parsing. */
+struct tnode *root;
+
 %}
 
 
@@ -31,33 +18,47 @@ char output[4096];
 
 /* Fields passed by lex into struct yylval. */
 %union {
-        char* lexeme;
-        double value;
+        struct tnode *tnode;
 }
 
 
 /* Terminals. */
-%token SET
-%token VAR
-%token TO
-%token IF
-%token THEN
-%token ELSE
-%token WHILE
-%token DO 
-%token END
-%token <lexeme> ID
-%token <value>  NUM
-%token <lexeme> STRING
+%token <tnode> SET
+%token <tnode> VAR
+%token <tnode> TO
+%token <tnode> IF
+%token <tnode> THEN
+%token <tnode> ELSE
+%token <tnode> WHILE
+%token <tnode> DO 
+%token <tnode> END
+%token <tnode> ID
+%token <tnode> NUM
+%token <tnode> STRING
+%token <tnode> OPBR 
+%token <tnode> CLBR
+%token <tnode> EQUA
+%token <tnode> PLUS
+%token <tnode> MINU
+%token <tnode> MULT
+%token <tnode> DIVI
 
-/* Declarements of typed non-terminals. */
-%type <value> expr
+
+/* Declarement of typed non-terminals. */
+%type <tnode> program 
+%type <tnode> block
+%type <tnode> stmtlist
+%type <tnode> stmt
+%type <tnode> assignment
+%type <tnode> if
+%type <tnode> while
+%type <tnode> expr
 
 
 /* Declarements of operators in increasing order of precedence. */
-%left '='
-%left '-' '+'
-%left '*' '/'
+%left EQUA
+%left MINU PLUS
+%left MULT DIVI
 %right UMINUS
 
 
@@ -74,25 +75,30 @@ char output[4096];
 program
         : block
                 {
-                        /* Base case: the scope of the language has been
-                         * reached. The output has to be redirected to a
-                         * file or to stdout.
-                         */
-                        printf ("%s", output);
+                        struct tnode *newroot = malloc (sizeof (struct tnode));
+                        newroot->child = $1;
+                        root = newroot;
                 }
 
         | block program
                 {
-                        /* TODO */
+                        struct tnode *newroot = malloc (sizeof (struct tnode));
+                        newroot->child = $1;
+                        newroot->child->next = $2;
+                        root = newroot;
                 }
         ;
 
 
 /* Code block. */
 block
-        : '(' stmtlist ')'
+        : OPBR stmtlist CLBR
                 {
-                        /* TODO */
+                        struct tnode *newroot = malloc (sizeof (struct tnode));
+                        newroot->child = $1;
+                        newroot->child->next = $2;
+                        newroot->child->next->next = $3;
+                        root = newroot;
                 }
         ;
 
@@ -101,12 +107,17 @@ block
 stmtlist
         : stmtlist stmt 
                 {
-                        /* TODO */
+                        struct tnode *newroot = malloc (sizeof (struct tnode));
+                        newroot->child = $1;
+                        newroot->child->next = $2;
+                        root = newroot;
                 }
 
         | stmt
                 {
-                        /* TODO */
+                        struct tnode *newroot = malloc (sizeof (struct tnode));
+                        newroot->child = $1;
+                        root = newroot;
                 }
         ;
 
@@ -115,22 +126,30 @@ stmtlist
 stmt
         : assignment
                 {
-                        /* TODO */
+                        struct tnode *newroot = malloc (sizeof (struct tnode));
+                        newroot->child = $1;
+                        root = newroot;
                 }
 
         | if
                 {
-                        /* TODO */
+                        struct tnode *newroot = malloc (sizeof (struct tnode));
+                        newroot->child = $1;
+                        root = newroot;
                 }
 
         | while
                 {
-                        /* TODO */
+                        struct tnode *newroot = malloc (sizeof (struct tnode));
+                        newroot->child = $1;
+                        root = newroot;
                 }
 
         | expr
                 {
-                        /* TODO */
+                        struct tnode *newroot = malloc (sizeof (struct tnode));
+                        newroot->child = $1;
+                        root = newroot;
                 }
         ;
 
@@ -139,12 +158,20 @@ stmt
 assignment
         : SET VAR ID TO expr
                 {
-                        /* TODO */
+                        struct tnode *newroot = malloc (sizeof (struct tnode));
+                        newroot->child = $3;
+                        newroot->child->next = $4;
+                        newroot->child->next->next = $5;
+                        root = newroot;
                 }
 
         | SET VAR ID TO STRING
                 {
-                        /* TODO */
+                        struct tnode *newroot = malloc (sizeof (struct tnode));
+                        newroot->child = $3;
+                        newroot->child->next = $4;
+                        newroot->child->next->next = $5;
+                        root = newroot;
                 }
         ;
 
@@ -153,12 +180,26 @@ assignment
 if
         : IF expr THEN stmtlist END
                 {
-                        /* TODO */
+                        struct tnode *newroot = malloc (sizeof (struct tnode));
+                        newroot->child = $1;
+                        newroot->child->next = $2;
+                        newroot->child->next->next = $3;
+                        newroot->child->next->next->next = $4;
+                        newroot->child->next->next->next->next = $5;
+                        root = newroot;
                 }
 
         | IF expr THEN stmtlist ELSE stmtlist END
                 {
-                        /* TODO */
+                        struct tnode *newroot = malloc (sizeof (struct tnode));
+                        newroot->child = $1;
+                        newroot->child->next = $2;
+                        newroot->child->next->next = $3;
+                        newroot->child->next->next->next = $4;
+                        newroot->child->next->next->next->next = $5;
+                        newroot->child->next->next->next->next->next = $6;
+                        newroot->child->next->next->next->next->next->next = $7;
+                        root = newroot;
                 }
         ;
 
@@ -167,79 +208,77 @@ if
 while
         : WHILE expr DO stmtlist END
                 {
-                        /* TODO */
+                        struct tnode *newroot = malloc (sizeof (struct tnode));
+                        newroot->child = $1;
+                        newroot->child->next = $2;
+                        newroot->child->next->next = $3;
+                        newroot->child->next->next->next = $4;
+                        newroot->child->next->next->next->next = $5;
+                        root = newroot;
                 }
         ;
 
 
 /* Expression */
 expr    
-        : functioncall
+        : expr PLUS expr
                 {
-                        /* TODO */
-                }
-        
-        | expr '+' expr
-                {
-                        /* TODO */
-                }
-
-        | expr '-' expr
-                {
-                        /* TODO */
+                        struct tnode *newroot = malloc (sizeof (struct tnode));
+                        newroot->child = $1;
+                        newroot->child->next = $2;
+                        newroot->child->next->next = $3;
+                        root = newroot;
                 }
 
-        | expr '*' expr
+        | expr MINU expr
                 {
-                        /* TODO */
+                        struct tnode *newroot = malloc (sizeof (struct tnode));
+                        newroot->child = $1;
+                        newroot->child->next = $2;
+                        newroot->child->next->next = $3;
+                        root = newroot;
                 }
 
-        | expr '/' expr
+        | expr MULT expr
                 {
-                        /* TODO */
+                        struct tnode *newroot = malloc (sizeof (struct tnode));
+                        newroot->child = $1;
+                        newroot->child->next = $2;
+                        newroot->child->next->next = $3;
+                        root = newroot;
                 }
 
-        | '-' expr %prec UMINUS
+        | expr DIVI expr
                 {
-                        /* TODO */
+                        struct tnode *newroot = malloc (sizeof (struct tnode));
+                        newroot->child = $1;
+                        newroot->child->next = $2;
+                        newroot->child->next->next = $3;
+                        root = newroot;
                 }
 
-        | '(' expr ')'
+        | MINU expr %prec UMINUS
                 {
-                        /* TODO */
+                        struct tnode *newroot = malloc (sizeof (struct tnode));
+                        newroot->child = $1;
+                        newroot->child->next = $2;
+                        root = newroot;
+                }
+
+        | OPBR expr CLBR
+                {
+                        struct tnode *newroot = malloc (sizeof (struct tnode));
+                        newroot->child = $1;
+                        newroot->child->next = $2;
+                        newroot->child->next->next = $3;
+                        root = newroot;
                 }
 
         | NUM
                 {
-                        char str[80];
-                        sprintf (str, "%lf", $1);
-                        strcat (output, str);
-                        test (str);
-                        printf ("The symbol table now contains: %s\n", teststr);
-                }
-
-        | ID
-                {
-                        strcat (output, $1);
-                }
-        
-        | STRING
-                {
-                        strcat (output, $1);
-                }
-
-        | STRING expr
-                {
-                        /* TODO */
-                }
-        ;
-
-
-/* A Function call to an existent C function */
-functioncall
-        : ID expr
-                {
-                        //$1 ($2);
+                        struct tnode *newroot = malloc (sizeof (struct tnode));
+                        newroot->child = $1;
+                        root = newroot;
                 }
         ;
 
@@ -261,4 +300,8 @@ int yyerror (const char *str)
 int main ()
 {
         yyparse ();
+        struct ptree *t;
+        t = malloc (sizeof (struct ptree));
+        t->root = root;
+        pt_traverse (t, stdout);
 }

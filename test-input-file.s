@@ -1,1 +1,1 @@
-(set variable x to 12345)
+(set variable x to 1234)

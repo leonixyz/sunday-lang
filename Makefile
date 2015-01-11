@@ -3,6 +3,7 @@ LEX=flex
 YACC=yacc
 CFLAGS=-Iinclude
 
+
 sunday-lang: include/symbol-table.o include/parse-tree.o
 	$(LEX) -l sunday-lang-lex.l
 	$(YACC) -vd sunday-lang-yacc.y
