@@ -6,6 +6,8 @@
 #include "include/symbol-table.h"
 #include "include/parse-tree.h"
 
+struct tnode *get_new_root(struct tnode *nodes[], int count);
+
 /* Current root of the parse tree used during parsing. */
 struct tnode *root;
 
@@ -79,17 +81,14 @@ const int TNODE_SIZE = sizeof (struct tnode);
 program
         : block program
                 {
-                        struct tnode *newroot = malloc (sizeof (struct tnode));
-                        newroot->child = $1;
-                        newroot->child->next = $2;
-                        root = newroot;
+                        struct tnode *nodes[] = {$1, $2};
+                        root = get_new_root(nodes, 2);
                 }
         
         | block
                 {
-                        struct tnode *newroot = malloc (sizeof (struct tnode));
-                        newroot->child = $1;
-                        root = newroot;
+                        struct tnode *nodes[] = {$1};
+                        root = get_new_root(nodes, 1);
                 }
 
         ;
@@ -99,11 +98,8 @@ program
 block
         : OPBR stmtlist CLBR
                 {
-                        struct tnode *newroot = malloc (sizeof (struct tnode));
-                        newroot->child = $1;
-                        newroot->child->next = $2;
-                        newroot->child->next->next = $3;
-                        root = newroot;
+                        struct tnode *nodes[] = {$1, $2, $3};
+                        root = get_new_root(nodes, 3);
                 }
         ;
 
@@ -112,17 +108,14 @@ block
 stmtlist
         : stmt stmtlist
                 {
-                        struct tnode *newroot = malloc (sizeof (struct tnode));
-                        newroot->child = $1;
-                        newroot->child->next = $2;
-                        root = newroot;
+                        struct tnode *nodes[] = {$1, $2};
+                        root = get_new_root(nodes, 2);
                 }
 
         | stmt
                 {
-                        struct tnode *newroot = malloc (sizeof (struct tnode));
-                        newroot->child = $1;
-                        root = newroot;
+                        struct tnode *nodes[] = {$1};
+                        root = get_new_root(nodes, 1);
                 }
         ;
 
@@ -131,30 +124,26 @@ stmtlist
 stmt
         : assignment
                 {
-                        struct tnode *newroot = malloc (sizeof (struct tnode));
-                        newroot->child = $1;
-                        root = newroot;
+                        struct tnode *nodes[] = {$1};
+                        root = get_new_root(nodes, 1);
                 }
 
         | if
                 {
-                        struct tnode *newroot = malloc (sizeof (struct tnode));
-                        newroot->child = $1;
-                        root = newroot;
+                        struct tnode *nodes[] = {$1};
+                        root = get_new_root(nodes, 1);
                 }
 
         | while
                 {
-                        struct tnode *newroot = malloc (sizeof (struct tnode));
-                        newroot->child = $1;
-                        root = newroot;
+                        struct tnode *nodes[] = {$1};
+                        root = get_new_root(nodes, 1);
                 }
 
         | expr
                 {
-                        struct tnode *newroot = malloc (sizeof (struct tnode));
-                        newroot->child = $1;
-                        root = newroot;
+                        struct tnode *nodes[] = {$1};
+                        root = get_new_root(nodes, 1);
                 }
         ;
 
@@ -163,20 +152,14 @@ stmt
 assignment
         : SET VAR ID TO expr
                 {
-                        struct tnode *newroot = malloc (sizeof (struct tnode));
-                        newroot->child = $3;
-                        newroot->child->next = $4;
-                        newroot->child->next->next = $5;
-                        root = newroot;
+                        struct tnode *nodes[] = {$3, $4, $5};
+                        root = get_new_root(nodes, 3);
                 }
 
         | SET VAR ID TO STRING
                 {
-                        struct tnode *newroot = malloc (sizeof (struct tnode));
-                        newroot->child = $3;
-                        newroot->child->next = $4;
-                        newroot->child->next->next = $5;
-                        root = newroot;
+                        struct tnode *nodes[] = {$3, $4, $5};
+                        root = get_new_root(nodes, 3);
                 }
         ;
 
@@ -185,26 +168,14 @@ assignment
 if
         : IF expr THEN stmtlist END
                 {
-                        struct tnode *newroot = malloc (sizeof (struct tnode));
-                        newroot->child = $1;
-                        newroot->child->next = $2;
-                        newroot->child->next->next = $3;
-                        newroot->child->next->next->next = $4;
-                        newroot->child->next->next->next->next = $5;
-                        root = newroot;
+                        struct tnode *nodes[] = {$1, $2, $3, $4, $5};
+                        root = get_new_root(nodes, 5);
                 }
 
         | IF expr THEN stmtlist ELSE stmtlist END
                 {
-                        struct tnode *newroot = malloc (sizeof (struct tnode));
-                        newroot->child = $1;
-                        newroot->child->next = $2;
-                        newroot->child->next->next = $3;
-                        newroot->child->next->next->next = $4;
-                        newroot->child->next->next->next->next = $5;
-                        newroot->child->next->next->next->next->next = $6;
-                        newroot->child->next->next->next->next->next->next = $7;
-                        root = newroot;
+                        struct tnode *nodes[] = {$1, $2, $3, $4, $5, $6, $7};
+                        root = get_new_root(nodes, 7);
                 }
         ;
 
@@ -213,13 +184,8 @@ if
 while
         : WHILE expr DO stmtlist END
                 {
-                        struct tnode *newroot = malloc (sizeof (struct tnode));
-                        newroot->child = $1;
-                        newroot->child->next = $2;
-                        newroot->child->next->next = $3;
-                        newroot->child->next->next->next = $4;
-                        newroot->child->next->next->next->next = $5;
-                        root = newroot;
+                        struct tnode *nodes[] = {$1, $2, $3, $4, $5};
+                        root = get_new_root(nodes, 5);
                 }
         ;
 
@@ -228,62 +194,44 @@ while
 expr    
         : expr PLUS expr
                 {
-                        struct tnode *newroot = malloc (sizeof (struct tnode));
-                        newroot->child = $1;
-                        newroot->child->next = $2;
-                        newroot->child->next->next = $3;
-                        root = newroot;
+                        struct tnode *nodes[] = {$1, $2, $3};
+                        root = get_new_root(nodes, 3);
                 }
 
         | expr MINU expr
                 {
-                        struct tnode *newroot = malloc (sizeof (struct tnode));
-                        newroot->child = $1;
-                        newroot->child->next = $2;
-                        newroot->child->next->next = $3;
-                        root = newroot;
+                        struct tnode *nodes[] = {$1, $2, $3};
+                        root = get_new_root(nodes, 3);
                 }
 
         | expr MULT expr
                 {
-                        struct tnode *newroot = malloc (sizeof (struct tnode));
-                        newroot->child = $1;
-                        newroot->child->next = $2;
-                        newroot->child->next->next = $3;
-                        root = newroot;
+                        struct tnode *nodes[] = {$1, $2, $3};
+                        root = get_new_root(nodes, 3);
                 }
 
         | expr DIVI expr
                 {
-                        struct tnode *newroot = malloc (sizeof (struct tnode));
-                        newroot->child = $1;
-                        newroot->child->next = $2;
-                        newroot->child->next->next = $3;
-                        root = newroot;
+                        struct tnode *nodes[] = {$1, $2, $3};
+                        root = get_new_root(nodes, 3);
                 }
 
         | MINU expr %prec UMINUS
                 {
-                        struct tnode *newroot = malloc (sizeof (struct tnode));
-                        newroot->child = $1;
-                        newroot->child->next = $2;
-                        root = newroot;
+                        struct tnode *nodes[] = {$1, $2};
+                        root = get_new_root(nodes, 2);
                 }
 
         | OPBR expr CLBR
                 {
-                        struct tnode *newroot = malloc (sizeof (struct tnode));
-                        newroot->child = $1;
-                        newroot->child->next = $2;
-                        newroot->child->next->next = $3;
-                        root = newroot;
+                        struct tnode *nodes[] = {$1, $2, $3};
+                        root = get_new_root(nodes, 3);
                 }
 
         | NUM
                 {
-                        struct tnode *newroot = malloc (sizeof (struct tnode));
-                        newroot->child = $1;
-                        root = newroot;
+                        struct tnode *nodes[] = {$1};
+                        root = get_new_root(nodes, 1);
                 }
         ;
 
@@ -313,8 +261,8 @@ struct tnode *get_new_root (struct tnode *nodes[], int size)
         newroot = malloc (TNODE_SIZE);
 
         /* Set the first child of the new root. */
-        current = newroot->child;
         newroot->child = nodes[0];
+        current = newroot->child;
         
         /* Set the other children of the new root. */
         for (i = 1; i < size; i++) {
