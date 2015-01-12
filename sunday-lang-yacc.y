@@ -9,6 +9,8 @@
 /* Current root of the parse tree used during parsing. */
 struct tnode *root;
 
+/* Size of a tnode structure (heavily used for malloc) */
+const int TNODE_SIZE = sizeof (struct tnode);
 %}
 
 
@@ -66,27 +68,30 @@ struct tnode *root;
 %start program
 
 
+
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 %%
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 
+
 /* Scope of the language. */
 program
-        : block
-                {
-                        struct tnode *newroot = malloc (sizeof (struct tnode));
-                        newroot->child = $1;
-                        root = newroot;
-                }
-
-        | block program
+        : block program
                 {
                         struct tnode *newroot = malloc (sizeof (struct tnode));
                         newroot->child = $1;
                         newroot->child->next = $2;
                         root = newroot;
                 }
+        
+        | block
+                {
+                        struct tnode *newroot = malloc (sizeof (struct tnode));
+                        newroot->child = $1;
+                        root = newroot;
+                }
+
         ;
 
 
@@ -105,7 +110,7 @@ block
 
 /* List of statements. */
 stmtlist
-        : stmtlist stmt 
+        : stmt stmtlist
                 {
                         struct tnode *newroot = malloc (sizeof (struct tnode));
                         newroot->child = $1;
@@ -283,20 +288,52 @@ expr
         ;
 
 
+
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 %%
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 
+
 #include "lex.yy.c"
 
 
+/* Dynamically add nodes (coming from lex) to a new parse tree root. */
+struct tnode *get_new_root (struct tnode *nodes[], int size)
+{
+
+        if (size < 1)
+                yyerror ("Cannot add less than one node to the parse tree.");
+
+        int i;
+        struct tnode *current;
+        struct tnode *newroot;
+        
+        /* Create a new root. */
+        newroot = malloc (TNODE_SIZE);
+
+        /* Set the first child of the new root. */
+        current = newroot->child;
+        newroot->child = nodes[0];
+        
+        /* Set the other children of the new root. */
+        for (i = 1; i < size; i++) {
+                current->next = nodes[i];
+                current = current->next;
+        }
+
+        return newroot;
+}
+
+
+/* Give hints about parsing errors. */
 int yyerror (const char *str)
 {
         fprintf (stderr, "Parse error: %s\n", str);
 }
 
 
+/* Parse and print the output to destination file. */
 int main ()
 {
         yyparse ();
