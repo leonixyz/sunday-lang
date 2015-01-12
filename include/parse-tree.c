@@ -20,7 +20,7 @@ void pt_traverse_rec (struct tnode *n, FILE* f)
 }
 
 
-void pt_print_node (struct node *n)
+void pt_print_node (struct tnode *n)
 {
         if (n)
                 printf ("%d\nstr='%s'\nchild=%d\nnext=%d\n\n",

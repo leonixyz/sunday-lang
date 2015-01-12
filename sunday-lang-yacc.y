@@ -83,12 +83,14 @@ program
                 {
                         struct tnode *nodes[] = {$1, $2};
                         root = get_new_root(nodes, 2);
+                        $$ = root;
                 }
         
         | block
                 {
                         struct tnode *nodes[] = {$1};
                         root = get_new_root(nodes, 1);
+                        $$ = root;
                 }
 
         ;
@@ -100,6 +102,7 @@ block
                 {
                         struct tnode *nodes[] = {$1, $2, $3};
                         root = get_new_root(nodes, 3);
+                        $$ = root;
                 }
         ;
 
@@ -110,12 +113,14 @@ stmtlist
                 {
                         struct tnode *nodes[] = {$1, $2};
                         root = get_new_root(nodes, 2);
+                        $$ = root;
                 }
 
         | stmt
                 {
                         struct tnode *nodes[] = {$1};
                         root = get_new_root(nodes, 1);
+                        $$ = root;
                 }
         ;
 
@@ -126,24 +131,28 @@ stmt
                 {
                         struct tnode *nodes[] = {$1};
                         root = get_new_root(nodes, 1);
+                        $$ = root;
                 }
 
         | if
                 {
                         struct tnode *nodes[] = {$1};
                         root = get_new_root(nodes, 1);
+                        $$ = root;
                 }
 
         | while
                 {
                         struct tnode *nodes[] = {$1};
                         root = get_new_root(nodes, 1);
+                        $$ = root;
                 }
 
         | expr
                 {
                         struct tnode *nodes[] = {$1};
                         root = get_new_root(nodes, 1);
+                        $$ = root;
                 }
         ;
 
@@ -154,12 +163,14 @@ assignment
                 {
                         struct tnode *nodes[] = {$3, $4, $5};
                         root = get_new_root(nodes, 3);
+                        $$ = root;
                 }
 
         | SET VAR ID TO STRING
                 {
                         struct tnode *nodes[] = {$3, $4, $5};
                         root = get_new_root(nodes, 3);
+                        $$ = root;
                 }
         ;
 
@@ -170,12 +181,14 @@ if
                 {
                         struct tnode *nodes[] = {$1, $2, $3, $4, $5};
                         root = get_new_root(nodes, 5);
+                        $$ = root;
                 }
 
         | IF expr THEN stmtlist ELSE stmtlist END
                 {
                         struct tnode *nodes[] = {$1, $2, $3, $4, $5, $6, $7};
                         root = get_new_root(nodes, 7);
+                        $$ = root;
                 }
         ;
 
@@ -186,6 +199,7 @@ while
                 {
                         struct tnode *nodes[] = {$1, $2, $3, $4, $5};
                         root = get_new_root(nodes, 5);
+                        $$ = root;
                 }
         ;
 
@@ -196,42 +210,49 @@ expr
                 {
                         struct tnode *nodes[] = {$1, $2, $3};
                         root = get_new_root(nodes, 3);
+                        $$ = root;
                 }
 
         | expr MINU expr
                 {
                         struct tnode *nodes[] = {$1, $2, $3};
                         root = get_new_root(nodes, 3);
+                        $$ = root;
                 }
 
         | expr MULT expr
                 {
                         struct tnode *nodes[] = {$1, $2, $3};
                         root = get_new_root(nodes, 3);
+                        $$ = root;
                 }
 
         | expr DIVI expr
                 {
                         struct tnode *nodes[] = {$1, $2, $3};
                         root = get_new_root(nodes, 3);
+                        $$ = root;
                 }
 
         | MINU expr %prec UMINUS
                 {
                         struct tnode *nodes[] = {$1, $2};
                         root = get_new_root(nodes, 2);
+                        $$ = root;
                 }
 
         | OPBR expr CLBR
                 {
                         struct tnode *nodes[] = {$1, $2, $3};
                         root = get_new_root(nodes, 3);
+                        $$ = root;
                 }
 
         | NUM
                 {
                         struct tnode *nodes[] = {$1};
                         root = get_new_root(nodes, 1);
+                        $$ = root;
                 }
         ;
 
@@ -249,7 +270,6 @@ expr
 /* Dynamically add nodes (coming from lex) to a new parse tree root. */
 struct tnode *get_new_root (struct tnode *nodes[], int size)
 {
-
         if (size < 1)
                 yyerror ("Cannot add less than one node to the parse tree.");
 
@@ -258,7 +278,7 @@ struct tnode *get_new_root (struct tnode *nodes[], int size)
         struct tnode *newroot;
         
         /* Create a new root. */
-        newroot = malloc (TNODE_SIZE);
+        newroot = calloc (1, TNODE_SIZE);
 
         /* Set the first child of the new root. */
         newroot->child = nodes[0];
@@ -269,7 +289,7 @@ struct tnode *get_new_root (struct tnode *nodes[], int size)
                 current->next = nodes[i];
                 current = current->next;
         }
-
+ 
         return newroot;
 }
 
