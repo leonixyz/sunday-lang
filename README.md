@@ -1,5 +1,5 @@
 #SUNDAY-LANG
-######the programming language to leard in foggy sundays
+######the programming language to learn during foggy sundays
 
 The idea is to crete a new imperative language that gets compiled to C. This language is inspired by AppleScript [http://en.wikipedia.org/wiki/AppleScript].
 
