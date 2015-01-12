@@ -12,12 +12,20 @@ void pt_traverse_rec (struct tnode *n, FILE* f)
         if (!n)
                 return;        
 
-// UNCOMMENT FOR DEBUGGING
-//        printf ("traversing node %d (str='%s', child=%d, next=%d)\n", n, n->txt, n->child, n->next);
-        if (n->txt)                             // COMMENT OUT FOR DEBUGGING
-                fprintf (f, "%s ", n->txt);     // COMMENT OUT FOR DEBUGGING
+        if (n->txt) 
+                fprintf (f, "%s ", n->txt); 
         
         pt_traverse_rec (n->child, f);
         pt_traverse_rec (n->next, f);
 }
 
+
+void pt_print_node (struct node *n)
+{
+        if (n)
+                printf ("%d\nstr='%s'\nchild=%d\nnext=%d\n\n",
+                        n,
+                        n->txt,
+                        n->child,
+                        n->next);
+}
