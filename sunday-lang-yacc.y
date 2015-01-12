@@ -6,21 +6,20 @@
 #include "include/symbol-table.h"
 #include "include/parse-tree.h"
 
-struct tnode *get_new_root(struct tnode *nodes[], int count);
 
-/* Current root of the parse tree used during parsing. */
-struct tnode *root;
-
-/* Size of a tnode structure (heavily used for malloc) */
+/* Size of a tnode structure (heavily used by malloc) */
 const int TNODE_SIZE = sizeof (struct tnode);
+
+/* Parse tree at the end of parsing. */
+struct ptree *parse_tree;
 %}
 
 
-/* Print some additional information */
+/* Print some additional information. */
 %error-verbose
 
 
-/* Fields passed by lex into struct yylval. */
+/* We only pass tnode structures into yylval. */
 %union {
         struct tnode *tnode;
 }
@@ -79,18 +78,18 @@ const int TNODE_SIZE = sizeof (struct tnode);
 
 /* Scope of the language. */
 program
-        : block program
+        : program block 
                 {
+                        struct tnode *root = calloc (1, TNODE_SIZE);
                         struct tnode *nodes[] = {$1, $2};
-                        root = get_new_root(nodes, 2);
-                        $$ = root;
+                        $$ = parse_tree->root = root = create_branch(nodes, 2);
                 }
         
         | block
                 {
+                        struct tnode *root = calloc (1, TNODE_SIZE);
                         struct tnode *nodes[] = {$1};
-                        root = get_new_root(nodes, 1);
-                        $$ = root;
+                        $$ = parse_tree->root = root = create_branch(nodes, 1);
                 }
 
         ;
@@ -101,26 +100,23 @@ block
         : OPBR stmtlist CLBR
                 {
                         struct tnode *nodes[] = {$1, $2, $3};
-                        root = get_new_root(nodes, 3);
-                        $$ = root;
+                        $$ = create_branch(nodes, 3);
                 }
         ;
 
 
 /* List of statements. */
 stmtlist
-        : stmt stmtlist
+        : stmtlist stmt
                 {
                         struct tnode *nodes[] = {$1, $2};
-                        root = get_new_root(nodes, 2);
-                        $$ = root;
+                        $$ = create_branch(nodes, 2);
                 }
 
         | stmt
                 {
                         struct tnode *nodes[] = {$1};
-                        root = get_new_root(nodes, 1);
-                        $$ = root;
+                        $$ = create_branch(nodes, 1);
                 }
         ;
 
@@ -130,29 +126,25 @@ stmt
         : assignment
                 {
                         struct tnode *nodes[] = {$1};
-                        root = get_new_root(nodes, 1);
-                        $$ = root;
+                        $$ = create_branch(nodes, 1);
                 }
 
         | if
                 {
                         struct tnode *nodes[] = {$1};
-                        root = get_new_root(nodes, 1);
-                        $$ = root;
+                        $$ = create_branch(nodes, 1);
                 }
 
         | while
                 {
                         struct tnode *nodes[] = {$1};
-                        root = get_new_root(nodes, 1);
-                        $$ = root;
+                        $$ = create_branch(nodes, 1);
                 }
 
         | expr
                 {
                         struct tnode *nodes[] = {$1};
-                        root = get_new_root(nodes, 1);
-                        $$ = root;
+                        $$ = create_branch(nodes, 1);
                 }
         ;
 
@@ -162,15 +154,13 @@ assignment
         : SET VAR ID TO expr
                 {
                         struct tnode *nodes[] = {$3, $4, $5};
-                        root = get_new_root(nodes, 3);
-                        $$ = root;
+                        $$ = create_branch(nodes, 3);
                 }
 
         | SET VAR ID TO STRING
                 {
                         struct tnode *nodes[] = {$3, $4, $5};
-                        root = get_new_root(nodes, 3);
-                        $$ = root;
+                        $$ = create_branch(nodes, 3);
                 }
         ;
 
@@ -180,15 +170,13 @@ if
         : IF expr THEN stmtlist END
                 {
                         struct tnode *nodes[] = {$1, $2, $3, $4, $5};
-                        root = get_new_root(nodes, 5);
-                        $$ = root;
+                        $$ = create_branch(nodes, 5);
                 }
 
         | IF expr THEN stmtlist ELSE stmtlist END
                 {
                         struct tnode *nodes[] = {$1, $2, $3, $4, $5, $6, $7};
-                        root = get_new_root(nodes, 7);
-                        $$ = root;
+                        $$ = create_branch(nodes, 7);
                 }
         ;
 
@@ -198,8 +186,7 @@ while
         : WHILE expr DO stmtlist END
                 {
                         struct tnode *nodes[] = {$1, $2, $3, $4, $5};
-                        root = get_new_root(nodes, 5);
-                        $$ = root;
+                        $$ = create_branch(nodes, 5);
                 }
         ;
 
@@ -209,50 +196,43 @@ expr
         : expr PLUS expr
                 {
                         struct tnode *nodes[] = {$1, $2, $3};
-                        root = get_new_root(nodes, 3);
-                        $$ = root;
+                        $$ = create_branch(nodes, 3);
                 }
 
         | expr MINU expr
                 {
                         struct tnode *nodes[] = {$1, $2, $3};
-                        root = get_new_root(nodes, 3);
-                        $$ = root;
+                        $$ = create_branch(nodes, 3);
                 }
 
         | expr MULT expr
                 {
                         struct tnode *nodes[] = {$1, $2, $3};
-                        root = get_new_root(nodes, 3);
-                        $$ = root;
+                        $$ = create_branch(nodes, 3);
                 }
 
         | expr DIVI expr
                 {
                         struct tnode *nodes[] = {$1, $2, $3};
-                        root = get_new_root(nodes, 3);
-                        $$ = root;
+                        $$ = create_branch(nodes, 3);
                 }
 
         | MINU expr %prec UMINUS
                 {
                         struct tnode *nodes[] = {$1, $2};
-                        root = get_new_root(nodes, 2);
-                        $$ = root;
+                        $$ = create_branch(nodes, 2);
                 }
 
         | OPBR expr CLBR
                 {
                         struct tnode *nodes[] = {$1, $2, $3};
-                        root = get_new_root(nodes, 3);
-                        $$ = root;
+                        $$ = create_branch(nodes, 3);
                 }
 
         | NUM
                 {
                         struct tnode *nodes[] = {$1};
-                        root = get_new_root(nodes, 1);
-                        $$ = root;
+                        $$ = create_branch(nodes, 1);
                 }
         ;
 
@@ -267,33 +247,6 @@ expr
 #include "lex.yy.c"
 
 
-/* Dynamically add nodes (coming from lex) to a new parse tree root. */
-struct tnode *get_new_root (struct tnode *nodes[], int size)
-{
-        if (size < 1)
-                yyerror ("Cannot add less than one node to the parse tree.");
-
-        int i;
-        struct tnode *current;
-        struct tnode *newroot;
-        
-        /* Create a new root. */
-        newroot = calloc (1, TNODE_SIZE);
-
-        /* Set the first child of the new root. */
-        newroot->child = nodes[0];
-        current = newroot->child;
-        
-        /* Set the other children of the new root. */
-        for (i = 1; i < size; i++) {
-                current->next = nodes[i];
-                current = current->next;
-        }
- 
-        return newroot;
-}
-
-
 /* Give hints about parsing errors. */
 int yyerror (const char *str)
 {
@@ -304,9 +257,7 @@ int yyerror (const char *str)
 /* Parse and print the output to destination file. */
 int main ()
 {
+        parse_tree = malloc (sizeof (struct ptree));
         yyparse ();
-        struct ptree *t;
-        t = malloc (sizeof (struct ptree));
-        t->root = root;
-        pt_traverse (t, stdout);
+        pt_traverse (parse_tree, stdout);
 }

@@ -20,12 +20,29 @@ void pt_traverse_rec (struct tnode *n, FILE* f)
 }
 
 
-void pt_print_node (struct tnode *n)
+struct tnode *create_branch (struct tnode *nodes[], int size)
 {
-        if (n)
-                printf ("%d\nstr='%s'\nchild=%d\nnext=%d\n\n",
-                        n,
-                        n->txt,
-                        n->child,
-                        n->next);
+        if (size < 1)
+                yyerror ("Cannot add less than one node to the parse tree.");
+
+        int i;
+        struct tnode *current;
+        struct tnode *newroot;
+        
+        /* Create a root. */
+        newroot = calloc (1, TNODE_SIZE);
+
+        /* Attach the first child to the root. */
+        newroot->child = nodes[0];
+        current = newroot->child;
+        
+        /* Attach the other children to the root. */
+        for (i = 1; i < size; i++) {
+                current->next = nodes[i];
+                current = current->next;
+        }
+ 
+        return newroot;
 }
+
+

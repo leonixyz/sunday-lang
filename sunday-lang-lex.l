@@ -5,6 +5,7 @@
 #include "include/symbol-table.h"
 #include "include/parse-tree.h"
 
+/* Prototype for helper function defined later. */
 struct tnode *get_tnode (char *str);
 %}
 
