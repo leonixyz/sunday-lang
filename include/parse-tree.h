@@ -4,11 +4,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-/* Prototype for yacc function (used in create_branch) */
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/*                      Prototypes and external things.                      */
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+/* Yacc function used in create_branch. */
 int yyerror (const char *strerror);
 
-/* Prototype for global constant defined in .y file */
-extern const int TNODE_SIZE;
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/*                           Structure definitions                           */
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 /* A parse tree. */
 struct ptree {
@@ -22,6 +27,17 @@ struct tnode {
         struct tnode *next;
 };
 
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/*                                   Constants.                              */
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+/* Size of a tnode structure (heavily used by malloc) */
+extern const int TNODE_SIZE;
+
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/*                           Functions declarations.                         */
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
 /* Traverse a parse tree in depth-first. */
 void pt_traverse (struct ptree *t, FILE* f);
 
@@ -30,5 +46,6 @@ void pt_traverse_rec (struct tnode *n, FILE* f);
 
 /* Create a new branch having count-many children in an array */
 struct tnode *create_branch (struct tnode *nodes[], int count);
+
 
 #endif

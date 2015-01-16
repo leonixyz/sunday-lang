@@ -1,5 +1,18 @@
 #include "parse-tree.h"
 
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/*                                   Constants.                              */
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+
+/* Size of a tnode structure (heavily used by malloc) */
+const int TNODE_SIZE = sizeof (struct tnode);
+
+
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/*                                   Functions.                              */
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
 
 void pt_traverse (struct ptree *t, FILE* f)
 {

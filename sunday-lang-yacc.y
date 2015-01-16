@@ -6,9 +6,8 @@
 #include "include/symbol-table.h"
 #include "include/parse-tree.h"
 
-
-/* Size of a tnode structure (heavily used by malloc) */
-const int TNODE_SIZE = sizeof (struct tnode);
+/* Global constant defined in parse-tree.h file */
+extern const int TNODE_SIZE;
 
 /* Parse tree at the end of parsing. */
 struct ptree *parse_tree;
