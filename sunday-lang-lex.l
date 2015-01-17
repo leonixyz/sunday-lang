@@ -6,7 +6,7 @@
 #include "include/parse-tree.h"
 
 /* Prototype for helper function defined later. */
-struct tnode *get_tnode (int ntype, char *str);
+struct tnode *get_tnode (char *str);
 %}
 
 
@@ -55,23 +55,23 @@ STRING  "([^"]|\\")*"
 {VAR}    { return VAR; }
  
  /* Tokens with associated tnode */
-{TO}     { yylval.tnode = (struct tnode*) get_tnode (TO, "=");     return TO;  }
-{IF}     { yylval.tnode = (struct tnode*) get_tnode (IF, "if");    return IF;  }
-{THEN}   { yylval.tnode = (struct tnode*) get_tnode (THEN, "{");   return THEN;}
-{ELSE}   { yylval.tnode = (struct tnode*) get_tnode (ELSE, "else");return ELSE;}
-{WHILE}  { yylval.tnode = (struct tnode*) get_tnode (WHILE, "while");return WHILE;}
-{DO}     { yylval.tnode = (struct tnode*) get_tnode (DO, "do");    return DO;  }
-{END}    { yylval.tnode = (struct tnode*) get_tnode (END, "end");  return END; }
-{OPBR}   { yylval.tnode = (struct tnode*) get_tnode (OPBR, "(");   return OPBR;}
-{CLBR}   { yylval.tnode = (struct tnode*) get_tnode (CLBR, ")");   return CLBR;}
-{EQUA}   { yylval.tnode = (struct tnode*) get_tnode (EQUA, "==");  return EQUA;}
-{PLUS}   { yylval.tnode = (struct tnode*) get_tnode (PLUS, "+");   return PLUS;}
-{MINU}   { yylval.tnode = (struct tnode*) get_tnode (MINU, "-");   return MINU;}
-{MULT}   { yylval.tnode = (struct tnode*) get_tnode (MULT, "*");   return MULT;}
-{DIVI}   { yylval.tnode = (struct tnode*) get_tnode (DIVI, "/");   return DIVI;}
-{ID}     { yylval.tnode = (struct tnode*) get_tnode (ID, yytext);  return ID;  }
-{STRING} { yylval.tnode = (struct tnode*) get_tnode (STRING, yytext);return STRING;}
-{NUM}    { yylval.tnode = (struct tnode*) get_tnode (NUM, yytext); return NUM; }
+{TO}     { yylval.tnode = (struct tnode*) get_tnode ("=");     return TO;      }
+{IF}     { yylval.tnode = (struct tnode*) get_tnode ("if");    return IF;      }
+{THEN}   { yylval.tnode = (struct tnode*) get_tnode ("{");     return THEN;    }
+{ELSE}   { yylval.tnode = (struct tnode*) get_tnode ("else");  return ELSE;    }
+{WHILE}  { yylval.tnode = (struct tnode*) get_tnode ("while"); return WHILE;   }
+{DO}     { yylval.tnode = (struct tnode*) get_tnode ("do");    return DO;      }
+{END}    { yylval.tnode = (struct tnode*) get_tnode ("end");   return END;     }
+{OPBR}   { yylval.tnode = (struct tnode*) get_tnode ("(");     return OPBR;    }
+{CLBR}   { yylval.tnode = (struct tnode*) get_tnode (")");     return CLBR;    }
+{EQUA}   { yylval.tnode = (struct tnode*) get_tnode ("==");    return EQUA;    }
+{PLUS}   { yylval.tnode = (struct tnode*) get_tnode ("+");     return PLUS;    }
+{MINU}   { yylval.tnode = (struct tnode*) get_tnode ("-");     return MINU;    }
+{MULT}   { yylval.tnode = (struct tnode*) get_tnode ("*");     return MULT;    }
+{DIVI}   { yylval.tnode = (struct tnode*) get_tnode ("/");     return DIVI;    }
+{ID}     { yylval.tnode = (struct tnode*) get_tnode (yytext);  return ID;      }
+{STRING} { yylval.tnode = (struct tnode*) get_tnode (yytext);  return STRING;  }
+{NUM}    { yylval.tnode = (struct tnode*) get_tnode (yytext);  return NUM;     }
 
 
 
@@ -82,11 +82,10 @@ STRING  "([^"]|\\")*"
 
 
 /* Returns a pointer to a tnode representing a string of the output language */
-struct tnode *get_tnode (int ntype, char * str)
+struct tnode *get_tnode (char * str)
 {
         struct tnode *n = malloc (sizeof (struct tnode));
         n->txt = strdup (str);
-        n->ntype = ntype;
 
         return n;
 }

@@ -134,24 +134,3 @@ char *st_flush ()
 
         return out;
 }
-
-
-/*
-void st_debug (struct st *tab)
-{
-        fprintf (stderr, "\nCurrent symbol table: %d\n", tab);
-        if (!tab)
-                return;
-
-        struct st_rec *current = tab->first;
-        while (current) {
-                fprintf (stderr, "entry: %d\n", current);
-                fprintf (stderr, "name: %s\n", current->name);
-                fprintf (stderr, "type: %d\n", current->type);
-                fprintf (stderr, "valu: %s\n", current->value);
-                fprintf (stderr, "next %d\n\n", current->next);
-                current = current->next;
-        }
-        st_debug (tab->parent);
-}
-*/

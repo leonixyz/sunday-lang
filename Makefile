@@ -7,11 +7,13 @@ VERBOSE=--verbose
 # Build the compiler
 sunday-lang: include/symbol-table.o include/parse-tree.o
 	$(LEX) -l sunday-lang-lex.l
-	$(YACC) -vd sunday-lang-yacc.y $(VERBOSE)
+	$(YACC) -vd sunday-lang-yacc.y
 	$(CC) -o sundayc y.tab.c include/symbol-table.o include/parse-tree.o -ly 
 
 # Build the compiler with debug info
-sunday-lang-debug: include/symbol-table.o include/parse-tree.o
+sunday-lang-debug:
+	$(CC) -g -c -o include/symbol-table.o include/symbol-table.c
+	$(CC) -g -c -o include/parse-tree.o include/parse-tree.c
 	$(LEX) -l sunday-lang-lex.l
 	$(YACC) -vd sunday-lang-yacc.y $(VERBOSE)
 	$(CC) -g -o sundayc y.tab.c include/symbol-table.o include/parse-tree.o -ly 
