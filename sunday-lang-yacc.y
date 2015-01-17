@@ -6,11 +6,26 @@
 #include "include/symbol-table.h"
 #include "include/parse-tree.h"
 
+/* Symbol table entries types defined in symbol-table.h file. */
+extern const TYPE_NOT_SET;   // 0
+extern const TYPE_FUNCTION;  // 1
+extern const TYPE_NUMVAR;    // 2
+extern const TYPE_STRVAR;    // 3
+
 /* Global constant defined in parse-tree.h file */
 extern const int TNODE_SIZE;
 
+/* Global constant defined in simbol-table.h file */
+extern const int ST_REC_SIZE;
+
 /* Parse tree at the end of parsing. */
 struct ptree *parse_tree;
+
+/* Create the global symbol table on top of the stack. */
+struct st *st_stack_top;
+
+/* Prototypes. */
+struct st_rec;
 %}
 
 
@@ -25,6 +40,7 @@ struct ptree *parse_tree;
 
 
 /* Terminals. */
+%token <tnode> USE
 %token <tnode> SET
 %token <tnode> VAR
 %token <tnode> TO
@@ -51,6 +67,7 @@ struct ptree *parse_tree;
 %type <tnode> block
 %type <tnode> stmtlist
 %type <tnode> stmt
+%type <tnode> declaration
 %type <tnode> assignment
 %type <tnode> if
 %type <tnode> while
@@ -83,7 +100,7 @@ program
                         struct tnode *nodes[] = {$1, $2};
                         $$ = parse_tree->root = root = create_branch(nodes, 2);
                 }
-        
+         
         | block
                 {
                         struct tnode *root = calloc (1, TNODE_SIZE);
@@ -96,10 +113,18 @@ program
 
 /* Code block. */
 block
-        : OPBR stmtlist CLBR
+        : { st_push (); } OPBR stmtlist CLBR
                 {
-                        struct tnode *nodes[] = {$1, $2, $3};
-                        $$ = create_branch(nodes, 3);
+                        /* Allocate a new node containing all declarations. */
+                        struct tnode *declarations = malloc (TNODE_SIZE);
+                        declarations->txt = st_flush ();
+                        st_pop ();
+
+                        /* Correct the translated symbols. */
+                        $2->txt[0] = '{';
+                        $4->txt[0] = '}';
+                        struct tnode *nodes[] = {$2, declarations, $3, $4};
+                        $$ = create_branch (nodes, 3);
                 }
         ;
 
@@ -122,7 +147,13 @@ stmtlist
 
 /* Single statement. */
 stmt
-        : assignment
+        : declaration
+                {
+                        struct tnode *nodes[] = {$1};
+                        $$ = create_branch(nodes, 1);
+                }
+        
+        | assignment
                 {
                         struct tnode *nodes[] = {$1};
                         $$ = create_branch(nodes, 1);
@@ -148,16 +179,79 @@ stmt
         ;
 
 
+/* Variable declaration. */
+declaration
+        : USE VAR ID
+                {
+                        struct st_rec *newrec = calloc (1, ST_REC_SIZE);
+                        newrec->name = strdup ($3->txt);
+                        st_insert (st_stack_top, newrec);
+                }
+        ;
+
+
 /* Assignment statement. */
 assignment
         : SET VAR ID TO expr
                 {
+                        struct st_rec *var = st_lookup (st_stack_top, $3->txt);
+                        if (!var) {
+                                /* TODO check potential buffer overflow if the
+                                 *      variable name is too long */
+                                char strerror[128] = "the following variable"
+                                                " has not been declared: ";
+                                strcat (strerror, $3->txt);
+                                yyerror (strerror);
+                                return;
+                        }
+
+                        if (var->type && var->type != TYPE_NUMVAR) {
+                                /* TODO check potential buffer overflow if the
+                                 *      variable name is too long */
+                                char strerror[256] = "the following variable "
+                                                "has been declared as a "
+                                                "string but it's used as "
+                                                "a number: ";
+                                strcat (strerror, $3->txt);
+                                yyerror (strerror);
+                                return;
+                        }
+
+                        st_settype (var, TYPE_NUMVAR);
+                        /*TODO DEBUG HERE */
+                        fprintf (stderr, "\n\n\n\n\nthe string is:%s\n\n\n\n",$5->txt);
+                        var->value = strdup ($5->txt);
                         struct tnode *nodes[] = {$3, $4, $5};
                         $$ = create_branch(nodes, 3);
                 }
 
         | SET VAR ID TO STRING
                 {
+                        struct st_rec *var = st_lookup (st_stack_top, $3->txt);
+                        if (!var) {
+                                /* TODO check potential buffer overflow if the
+                                 *      variable name is too long */
+                                char strerror[128] = "the following variable"
+                                                " has not been declared: ";
+                                strcat (strerror, $3->txt);
+                                yyerror (strerror);
+                                return;
+                        }
+
+                        if (var->type && var->type != TYPE_STRVAR) {
+                                /* TODO check potential buffer overflow if the
+                                 *      variable name is too long */
+                                char strerror[256] = "the following variable "
+                                                "has been declared as a"
+                                                "number but it's used as "
+                                                "a string: ";
+                                strcat (strerror, $3->txt);
+                                yyerror (strerror);
+                                return;
+                        }
+
+                        st_settype (var, TYPE_STRVAR);
+                        var->value = strdup ($5->txt);
                         struct tnode *nodes[] = {$3, $4, $5};
                         $$ = create_branch(nodes, 3);
                 }
@@ -250,12 +344,14 @@ expr
 int yyerror (const char *str)
 {
         fprintf (stderr, "Parse error: %s\n", str);
+//        fprintf (stderr, "\n\n%s\n\n", st_debug (st_stack_top));
 }
 
 
 /* Parse and print the output to destination file. */
 int main ()
 {
+        st_stack_top = malloc (sizeof (struct st));
         parse_tree = malloc (sizeof (struct ptree));
         yyparse ();
         pt_traverse (parse_tree, stdout);

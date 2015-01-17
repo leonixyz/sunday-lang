@@ -15,6 +15,7 @@ DIGIT   [0-9]
 LETTER  [a-zA-Z]
 
  /* Tokens without associated values */
+USE     use
 SET     set
 VAR     variable
 TO      to
@@ -49,6 +50,7 @@ STRING  "([^"]|\\")*"
 [ \n]    {}
 
  /* Tokens without associated tnode */
+{USE}    { return USE; }
 {SET}    { return SET; }
 {VAR}    { return VAR; }
  
