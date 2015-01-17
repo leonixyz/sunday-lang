@@ -56,6 +56,10 @@ struct st *st_stack_top;
 %token <tnode> OPBR 
 %token <tnode> CLBR
 %token <tnode> EQUA
+%token <tnode> GT
+%token <tnode> LT
+%token <tnode> GOE
+%token <tnode> LOE
 %token <tnode> PLUS
 %token <tnode> MINU
 %token <tnode> MULT
@@ -74,7 +78,7 @@ struct st *st_stack_top;
 
 
 /* Declarements of operators in increasing order of precedence. */
-%left EQUA
+%left EQUA GT LT GOE LOE
 %left MINU PLUS
 %left MULT DIVI
 %right UMINUS
@@ -132,22 +136,14 @@ block
 stmtlist
         : stmt
                 {
-                        /* Each C statement ends with a semicolon. */
-                        struct tnode *semicolon = malloc (TNODE_SIZE);
-                        semicolon->txt = ";";
-                        
-                        struct tnode *nodes[] = {$1, semicolon};
-                        $$ = pt_create_branch (nodes, 2);
+                        struct tnode *nodes[] = {$1};
+                        $$ = pt_create_branch (nodes, 1);
                 }
 
         | stmtlist stmt
                 {
-                        /* Each C statement ends with a semicolon. */
-                        struct tnode *semicolon = malloc (TNODE_SIZE);
-                        semicolon->txt = ";";
-                        
-                        struct tnode *nodes[] = {$1, $2, semicolon};
-                        $$ = pt_create_branch (nodes, 3);
+                        struct tnode *nodes[] = {$1, $2};
+                        $$ = pt_create_branch (nodes, 2);
                 }
         ;
 
@@ -156,8 +152,12 @@ stmtlist
 stmt
         : assignment
                 {
-                        struct tnode *nodes[] = {$1};
-                        $$ = pt_create_branch (nodes, 1);
+                        /* Add an ending semicolon. */
+                        struct tnode *semicolon = malloc (TNODE_SIZE);
+                        semicolon->txt = ";";
+                        
+                        struct tnode *nodes[] = {$1, semicolon};
+                        $$ = pt_create_branch (nodes, 2);
                 }
 
         | if
@@ -174,8 +174,12 @@ stmt
 
         | expr
                 {
-                        struct tnode *nodes[] = {$1};
-                        $$ = pt_create_branch (nodes, 1);
+                        /* Add an ending semicolon. */
+                        struct tnode *semicolon = malloc (TNODE_SIZE);
+                        semicolon->txt = ";";
+                        
+                        struct tnode *nodes[] = {$1, semicolon};
+                        $$ = pt_create_branch (nodes, 2);
                 }
         ;
 
@@ -247,14 +251,28 @@ assignment
 if
         : IF expr THEN stmtlist END
                 {
-                        struct tnode *nodes[] = {$1, $2, $3, $4, $5};
-                        $$ = pt_create_branch (nodes, 5);
+                        /* Create surrounding brackets for expr. */
+                        struct tnode *opbr, *clbr;
+                        opbr = calloc (1, TNODE_SIZE);
+                        opbr->txt = strdup ("(");
+                        clbr = calloc (1, TNODE_SIZE);
+                        clbr->txt = strdup (")");
+
+                        struct tnode *nodes[] = {$1, opbr, $2, clbr, $3, $4, $5};
+                        $$ = pt_create_branch (nodes, 7);
                 }
 
         | IF expr THEN stmtlist ELSE stmtlist END
                 {
-                        struct tnode *nodes[] = {$1, $2, $3, $4, $5, $6, $7};
-                        $$ = pt_create_branch (nodes, 7);
+                        /* Create surrounding brackets for expr. */
+                        struct tnode *opbr, *clbr;
+                        opbr = calloc (1, TNODE_SIZE);
+                        opbr->txt = strdup ("(");
+                        clbr = calloc (1, TNODE_SIZE);
+                        clbr->txt = strdup (")");
+
+                        struct tnode *nodes[] = {$1, opbr, $2, clbr, $3, $4, $5, $6, $7};
+                        $$ = pt_create_branch (nodes, 9);
                 }
         ;
 
@@ -295,6 +313,36 @@ expr
                         $$ = pt_create_branch (nodes, 3);
                 }
 
+        | expr EQUA expr
+                {
+                        struct tnode *nodes[] = {$1, $2, $3};
+                        $$ = pt_create_branch (nodes, 3);
+                }
+
+        | expr GT expr
+                {
+                        struct tnode *nodes[] = {$1, $2, $3};
+                        $$ = pt_create_branch (nodes, 3);
+                }
+
+        | expr LT expr
+                {
+                        struct tnode *nodes[] = {$1, $2, $3};
+                        $$ = pt_create_branch (nodes, 3);
+                }
+
+        | expr GOE expr
+                {
+                        struct tnode *nodes[] = {$1, $2, $3};
+                        $$ = pt_create_branch (nodes, 3);
+                }
+
+        | expr LOE expr
+                {
+                        struct tnode *nodes[] = {$1, $2, $3};
+                        $$ = pt_create_branch (nodes, 3);
+                }
+
         | MINU expr %prec UMINUS
                 {
                         struct tnode *nodes[] = {$1, $2};
@@ -312,6 +360,12 @@ expr
                         struct tnode *nodes[] = {$1};
                         $$ = pt_create_branch (nodes, 1);
                 }
+
+        | ID
+                {
+                        struct tnode *nodes[] = {$1};
+                        $$ = pt_create_branch (nodes, 1);
+                } 
         ;
 
 

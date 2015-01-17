@@ -28,6 +28,10 @@ END     end
 OPBR    \(
 CLBR    \)
 EQUA    =
+GT      >
+LT      <
+GOE     >=
+LOE     <=
 PLUS    \+
 MINU    -
 MULT    \*
@@ -55,23 +59,27 @@ STRING  "([^"]|\\")*"
 {VAR}    { return VAR; }
  
  /* Tokens with associated tnode */
-{TO}     { yylval.tnode = (struct tnode*) get_tnode ("=");     return TO;      }
-{IF}     { yylval.tnode = (struct tnode*) get_tnode ("if");    return IF;      }
-{THEN}   { yylval.tnode = (struct tnode*) get_tnode ("{");     return THEN;    }
-{ELSE}   { yylval.tnode = (struct tnode*) get_tnode ("else");  return ELSE;    }
-{WHILE}  { yylval.tnode = (struct tnode*) get_tnode ("while"); return WHILE;   }
-{DO}     { yylval.tnode = (struct tnode*) get_tnode ("do");    return DO;      }
-{END}    { yylval.tnode = (struct tnode*) get_tnode ("end");   return END;     }
-{OPBR}   { yylval.tnode = (struct tnode*) get_tnode ("(");     return OPBR;    }
-{CLBR}   { yylval.tnode = (struct tnode*) get_tnode (")");     return CLBR;    }
-{EQUA}   { yylval.tnode = (struct tnode*) get_tnode ("==");    return EQUA;    }
-{PLUS}   { yylval.tnode = (struct tnode*) get_tnode ("+");     return PLUS;    }
-{MINU}   { yylval.tnode = (struct tnode*) get_tnode ("-");     return MINU;    }
-{MULT}   { yylval.tnode = (struct tnode*) get_tnode ("*");     return MULT;    }
-{DIVI}   { yylval.tnode = (struct tnode*) get_tnode ("/");     return DIVI;    }
-{ID}     { yylval.tnode = (struct tnode*) get_tnode (yytext);  return ID;      }
-{STRING} { yylval.tnode = (struct tnode*) get_tnode (yytext);  return STRING;  }
-{NUM}    { yylval.tnode = (struct tnode*) get_tnode (yytext);  return NUM;     }
+{TO}     { yylval.tnode = (struct tnode*) get_tnode ("=");       return TO;    }
+{IF}     { yylval.tnode = (struct tnode*) get_tnode ("if");      return IF;    }
+{THEN}   { yylval.tnode = (struct tnode*) get_tnode ("{");       return THEN;  }
+{ELSE}   { yylval.tnode = (struct tnode*) get_tnode ("} else {");return ELSE;  }
+{WHILE}  { yylval.tnode = (struct tnode*) get_tnode ("while");   return WHILE; }
+{DO}     { yylval.tnode = (struct tnode*) get_tnode ("{");       return DO;    }
+{END}    { yylval.tnode = (struct tnode*) get_tnode ("}");       return END;   }
+{OPBR}   { yylval.tnode = (struct tnode*) get_tnode ("(");       return OPBR;  }
+{CLBR}   { yylval.tnode = (struct tnode*) get_tnode (")");       return CLBR;  }
+{EQUA}   { yylval.tnode = (struct tnode*) get_tnode ("==");      return EQUA;  }
+{GT}     { yylval.tnode = (struct tnode*) get_tnode (">");       return GT;    }
+{LT}     { yylval.tnode = (struct tnode*) get_tnode ("<");       return LT;    }
+{GOE}    { yylval.tnode = (struct tnode*) get_tnode (">=");      return GOE;   }
+{LOE}    { yylval.tnode = (struct tnode*) get_tnode ("<=");      return LOE;   }
+{PLUS}   { yylval.tnode = (struct tnode*) get_tnode ("+");       return PLUS;  }
+{MINU}   { yylval.tnode = (struct tnode*) get_tnode ("-");       return MINU;  }
+{MULT}   { yylval.tnode = (struct tnode*) get_tnode ("*");       return MULT;  }
+{DIVI}   { yylval.tnode = (struct tnode*) get_tnode ("/");       return DIVI;  }
+{ID}     { yylval.tnode = (struct tnode*) get_tnode (yytext);    return ID;    }
+{STRING} { yylval.tnode = (struct tnode*) get_tnode (yytext);    return STRING;}
+{NUM}    { yylval.tnode = (struct tnode*) get_tnode (yytext);    return NUM;   }
 
 
 
