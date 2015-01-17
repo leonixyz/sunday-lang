@@ -2,18 +2,21 @@
 #define SUNDAYLANG_PARSETREE
 
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-/*                      Prototypes and external things.                      */
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/* The maximum amount of nodes in the parse tree that an expression can use. */
+#define MAX_EXPR_LEN    512
 
-/* Yacc function used in create_branch. */
+/*----------------------------------------------------------------------------*/
+
+/* Yacc function prototype (used to raise parse errors). */
 int yyerror (const char *strerror);
 
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-/*                           Structure definitions                           */
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/* Size of a tnode structure (heavily used by malloc). */
+extern const size_t TNODE_SIZE;
+
+/*----------------------------------------------------------------------------*/
 
 /* A parse tree. */
 struct ptree {
@@ -27,25 +30,16 @@ struct tnode {
         struct tnode *next;
 };
 
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-/*                                   Constants.                              */
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-/* Size of a tnode structure (heavily used by malloc) */
-extern const int TNODE_SIZE;
-
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-/*                           Functions declarations.                         */
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/*----------------------------------------------------------------------------*/
 
 /* Traverse a parse tree in depth-first. */
 void pt_traverse (struct ptree *t, FILE* f);
 
-/* Recursive helper function for pt_traverse. */
-void pt_traverse_rec (struct tnode *n, FILE* f);
+/* Collapse a branch into a string. */
+char *pt_collapse_branch (struct tnode *n);
 
 /* Create a new branch having count-many children in an array */
-struct tnode *create_branch (struct tnode *nodes[], int count);
+struct tnode *pt_create_branch (struct tnode *nodes[], int count);
 
 
 #endif

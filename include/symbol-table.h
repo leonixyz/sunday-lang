@@ -4,10 +4,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-/*                         Structures definitions.                           */
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/*---------------------------------------------------------------------------*/
 
 /* A single simbol table's element. */
 struct st_rec {
@@ -23,15 +20,19 @@ struct st {
         struct st_rec   *first;
 };
 
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-/*                        Functions declarations.                            */
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/*---------------------------------------------------------------------------*/
 
 /* Insert a new record into a symbol table. */
 void st_insert (struct st *table, struct st_rec *newrec);
 
+/* Set a type for a given symbol table's record. */
+void st_settype (struct st_rec *symbol, int type);
+
 /* Lookup for a record in the whole simbol table's stack. */
 struct st_rec *st_lookup (struct st *table, char *name);
+
+/* Free the memory for a given symbol table's entry. */
+void st_rec_free (struct st_rec *todelete);
 
 /* Creates a new symbol table on top of the stack. */
 void st_push ();
