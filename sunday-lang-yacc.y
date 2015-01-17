@@ -6,6 +6,15 @@
 #include "include/symbol-table.h"
 #include "include/parse-tree.h"
 
+#define Nprog   1
+#define Nblock  2
+#define Nstmtls 3
+#define Nstmt   4
+#define Ndeclar 5
+#define Nassign 6
+#define Nif     7
+#define Nwhile  8
+#define Nexpr   9
 /* Symbol table entry types (defined in symbol-table.h). */
 extern const int TYPE_NOT_SET;  // 0
 extern const int TYPE_FUNCTION; // 1
@@ -94,18 +103,20 @@ struct st *st_stack_top;
 
 /* Scope of the language. */
 program
-        : program block 
-                {
-                        struct tnode *root = calloc (1, TNODE_SIZE);
-                        struct tnode *nodes[] = {$1, $2};
-                        $$ = parse_tree->root = root = pt_create_branch (nodes, 2);
-                }
-         
-        | block
+        : block
                 {
                         struct tnode *root = calloc (1, TNODE_SIZE);
                         struct tnode *nodes[] = {$1};
                         $$ = parse_tree->root = root = pt_create_branch (nodes, 1);
+                        $$->ntype = Nprog;
+                }
+        
+        | program block 
+                {
+                        struct tnode *root = calloc (1, TNODE_SIZE);
+                        struct tnode *nodes[] = {$1, $2};
+                        $$ = parse_tree->root = root = pt_create_branch (nodes, 2);
+                        $$->ntype = Nprog;
                 }
         ;
 
@@ -117,6 +128,7 @@ block
                         /* Allocate a new node containing all declarations. */
                         struct tnode *declarations = malloc (TNODE_SIZE);
                         declarations->txt = st_flush ();
+                        declarations->ntype = Ndeclar;
                         st_pop ();
 
                         /* Correct the translated symbols. */
@@ -124,57 +136,71 @@ block
                         $4->txt[0] = '}';
 
                         struct tnode *nodes[] = {$2, declarations, $3, $4};
-                        $$ = pt_create_branch (nodes, 3);
+                        $$ = pt_create_branch (nodes, 4);
+                        $$->ntype = Nblock;
                 }
         ;
 
 
 /* List of statements. */
 stmtlist
-        : stmtlist stmt
+        : stmt
                 {
-                        struct tnode *nodes[] = {$1, $2};
+                        struct tnode *semicolon = malloc (TNODE_SIZE);
+                        semicolon->txt = ";";
+                        
+                        struct tnode *nodes[] = {$1, semicolon};
                         $$ = pt_create_branch (nodes, 2);
+                        $$->ntype = Nstmtls;
                 }
 
-        | stmt
+        | stmtlist stmt
                 {
-                        struct tnode *nodes[] = {$1};
-                        $$ = pt_create_branch (nodes, 1);
+                        struct tnode *semicolon = malloc (TNODE_SIZE);
+                        semicolon->txt = ";";
+                        
+                        struct tnode *nodes[] = {$1, $2, semicolon};
+                        $$ = pt_create_branch (nodes, 3);
+                        $$->ntype = Nstmtls;
                 }
         ;
 
 
 /* Single statement. */
 stmt
-        : declaration
+        : /* declaration
                 {
                         struct tnode *nodes[] = {$1};
                         $$ = pt_create_branch (nodes, 1);
+                        $$->ntype = Nstmt;
                 }
         
-        | assignment
+        |*/ assignment
                 {
                         struct tnode *nodes[] = {$1};
                         $$ = pt_create_branch (nodes, 1);
+                        $$->ntype = Nstmt;
                 }
 
         | if
                 {
                         struct tnode *nodes[] = {$1};
                         $$ = pt_create_branch (nodes, 1);
+                        $$->ntype = Nstmt;
                 }
 
         | while
                 {
                         struct tnode *nodes[] = {$1};
                         $$ = pt_create_branch (nodes, 1);
+                        $$->ntype = Nstmt;
                 }
 
         | expr
                 {
                         struct tnode *nodes[] = {$1};
                         $$ = pt_create_branch (nodes, 1);
+                        $$->ntype = Nstmt;
                 }
         ;
 
@@ -197,12 +223,9 @@ assignment
                         /* Get the symbol table entry for the variable. */
                         struct st_rec *var = st_lookup (st_stack_top, $3->txt);
                         if (!var) {
-                                /* TODO Avoid potential buffer overflow. */
-                                char strerror[128] = "the following variable"
-                                                " has not been declared: ";
-                                strcat (strerror, $3->txt);
-                                yyerror (strerror);
-                                return;
+                               var = calloc (1, ST_REC_SIZE);
+                               var->name = strdup ($3->txt);
+                               st_insert (st_stack_top, var);
                         }
                         
                         /* Check that the variable was declared as a number. */
@@ -223,6 +246,7 @@ assignment
 
                         struct tnode *nodes[] = {$3, $4, $5};
                         $$ = pt_create_branch (nodes, 3);
+                        $$->ntype = Nassign;
                 }
 
         | SET VAR ID TO STRING
@@ -230,12 +254,9 @@ assignment
                         /* Get the symbol table entry for the variable. */
                         struct st_rec *var = st_lookup (st_stack_top, $3->txt);
                         if (!var) {
-                                /* TODO Avoid potential buffer overflow. */
-                                char strerror[128] = "the following variable"
-                                                " has not been declared: ";
-                                strcat (strerror, $3->txt);
-                                yyerror (strerror);
-                                return;
+                               var = calloc (1, ST_REC_SIZE);
+                               var->name = strdup ($3->txt);
+                               st_insert (st_stack_top, var);
                         }
 
                         if (var->type && var->type != TYPE_STRVAR) {
@@ -255,6 +276,7 @@ assignment
 
                         struct tnode *nodes[] = {$3, $4, $5};
                         $$ = pt_create_branch (nodes, 3);
+                        $$->ntype = Nassign;
                 }
         ;
 
@@ -265,12 +287,14 @@ if
                 {
                         struct tnode *nodes[] = {$1, $2, $3, $4, $5};
                         $$ = pt_create_branch (nodes, 5);
+                        $$->ntype = Nif;
                 }
 
         | IF expr THEN stmtlist ELSE stmtlist END
                 {
                         struct tnode *nodes[] = {$1, $2, $3, $4, $5, $6, $7};
                         $$ = pt_create_branch (nodes, 7);
+                        $$->ntype = Nif;
                 }
         ;
 
@@ -281,6 +305,7 @@ while
                 {
                         struct tnode *nodes[] = {$1, $2, $3, $4, $5};
                         $$ = pt_create_branch (nodes, 5);
+                        $$->ntype = Nwhile;
                 }
         ;
 
@@ -291,42 +316,49 @@ expr
                 {
                         struct tnode *nodes[] = {$1, $2, $3};
                         $$ = pt_create_branch (nodes, 3);
+                        $$->ntype = Nexpr;
                 }
 
         | expr MINU expr
                 {
                         struct tnode *nodes[] = {$1, $2, $3};
                         $$ = pt_create_branch (nodes, 3);
+                        $$->ntype = Nexpr;
                 }
 
         | expr MULT expr
                 {
                         struct tnode *nodes[] = {$1, $2, $3};
                         $$ = pt_create_branch (nodes, 3);
+                        $$->ntype = Nexpr;
                 }
 
         | expr DIVI expr
                 {
                         struct tnode *nodes[] = {$1, $2, $3};
                         $$ = pt_create_branch (nodes, 3);
+                        $$->ntype = Nexpr;
                 }
 
         | MINU expr %prec UMINUS
                 {
                         struct tnode *nodes[] = {$1, $2};
                         $$ = pt_create_branch (nodes, 2);
+                        $$->ntype = Nexpr;
                 }
 
         | OPBR expr CLBR
                 {
                         struct tnode *nodes[] = {$1, $2, $3};
                         $$ = pt_create_branch (nodes, 3);
+                        $$->ntype = Nexpr;
                 }
 
         | NUM
                 {
                         struct tnode *nodes[] = {$1};
                         $$ = pt_create_branch (nodes, 1);
+                        $$->ntype = Nexpr;
                 }
         ;
 

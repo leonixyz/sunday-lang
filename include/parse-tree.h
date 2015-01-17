@@ -25,6 +25,7 @@ struct ptree {
 
 /* A node of a parse tree */
 struct tnode {
+        int ntype;
         char *txt;
         struct tnode *child;
         struct tnode *next;
