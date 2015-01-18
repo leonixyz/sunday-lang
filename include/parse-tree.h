@@ -39,7 +39,7 @@ void pt_traverse (struct ptree *t, FILE* f);
 char *pt_collapse_branch (struct tnode *n);
 
 /* Create a new branch having count-many children in an array */
-struct tnode *pt_create_branch (struct tnode *nodes[], int count);
+struct tnode *pt_create_branch (char *ntype, struct tnode *nodes[], int count);
 
 
 #endif

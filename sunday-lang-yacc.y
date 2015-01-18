@@ -71,6 +71,7 @@ struct st *st_stack_top;
 %type <tnode> block
 %type <tnode> stmtlist
 %type <tnode> stmt
+%type <tnode> declarement
 %type <tnode> assignment
 %type <tnode> if
 %type <tnode> while
@@ -101,14 +102,14 @@ program
                 {
                         struct tnode *root = calloc (1, TNODE_SIZE);
                         struct tnode *nodes[] = {$1};
-                        $$ = parse_tree->root = root = pt_create_branch (nodes, 1);
+                        $$ = parse_tree->root = root = pt_create_branch ("program", nodes, 1);
                 }
         
         | program block 
                 {
                         struct tnode *root = calloc (1, TNODE_SIZE);
                         struct tnode *nodes[] = {$1, $2};
-                        $$ = parse_tree->root = root = pt_create_branch (nodes, 2);
+                        $$ = parse_tree->root = root = pt_create_branch ("program", nodes, 2);
                 }
         ;
 
@@ -127,7 +128,7 @@ block
                         $4->txt[0] = '}';
 
                         struct tnode *nodes[] = {$2, declarations, $3, $4};
-                        $$ = pt_create_branch (nodes, 4);
+                        $$ = pt_create_branch ("block", nodes, 4);
                 }
         ;
 
@@ -137,39 +138,45 @@ stmtlist
         : stmt
                 {
                         struct tnode *nodes[] = {$1};
-                        $$ = pt_create_branch (nodes, 1);
+                        $$ = pt_create_branch ("stmtlist", nodes, 1);
                 }
 
         | stmtlist stmt
                 {
                         struct tnode *nodes[] = {$1, $2};
-                        $$ = pt_create_branch (nodes, 2);
+                        $$ = pt_create_branch ("stmtlist", nodes, 2);
                 }
         ;
 
 
 /* Single statement. */
 stmt
-        : assignment
+        : declarement
+                {
+                        struct tnode *nodes[] = {$1};
+                        $$ = pt_create_branch ("stmt", nodes, 1);
+                }
+        
+        | assignment
                 {
                         /* Add an ending semicolon. */
                         struct tnode *semicolon = malloc (TNODE_SIZE);
                         semicolon->txt = ";";
                         
                         struct tnode *nodes[] = {$1, semicolon};
-                        $$ = pt_create_branch (nodes, 2);
+                        $$ = pt_create_branch ("stmt", nodes, 2);
                 }
 
         | if
                 {
                         struct tnode *nodes[] = {$1};
-                        $$ = pt_create_branch (nodes, 1);
+                        $$ = pt_create_branch ("stmt", nodes, 1);
                 }
 
         | while
                 {
                         struct tnode *nodes[] = {$1};
-                        $$ = pt_create_branch (nodes, 1);
+                        $$ = pt_create_branch ("stmt", nodes, 1);
                 }
 
         | expr
@@ -179,7 +186,22 @@ stmt
                         semicolon->txt = ";";
                         
                         struct tnode *nodes[] = {$1, semicolon};
-                        $$ = pt_create_branch (nodes, 2);
+                        $$ = pt_create_branch ("stmt", nodes, 2);
+                }
+        ;
+
+
+declarement
+        : USE VAR ID
+                {
+                        /* Insert a new symbol table entry for the variable. */
+                        struct st_rec *var = calloc (1, ST_REC_SIZE);
+                        var->name = strdup ($3->txt);
+                        st_insert (st_stack_top, var);
+                        
+                        struct tnode *declarement = malloc (TNODE_SIZE);
+                        struct tnode *nodes[] = {declarement};
+                        $$ = pt_create_branch ("stmt", nodes, 1);
                 }
         ;
 
@@ -191,9 +213,12 @@ assignment
                         /* Get the symbol table entry for the variable. */
                         struct st_rec *var = st_lookup (st_stack_top, $3->txt);
                         if (!var) {
-                               var = calloc (1, ST_REC_SIZE);
-                               var->name = strdup ($3->txt);
-                               st_insert (st_stack_top, var);
+                                /* TODO Avoid potential buffer overflow. */
+                                char strerror[128] = "the following variable "
+                                                "has not been declared: ";
+                                strcat (strerror, $3->txt);
+                                yyerror (strerror);
+                                return;
                         }
                         
                         /* Check that the variable was declared as a number. */
@@ -207,13 +232,19 @@ assignment
                                 yyerror (strerror);
                                 return;
                         }
-                        
-                        /* Update the symbol table. */
-                        st_settype (var, TYPE_NUMVAR);
+                        else {
+                                st_settype (var, TYPE_NUMVAR);
+                        }
+
+                        /*
                         var->value = pt_collapse_branch ($5);
+                        $5->child = NULL;
+                        $5->next = NULL;
+                        $5->txt = var->value;
+                        */
 
                         struct tnode *nodes[] = {$3, $4, $5};
-                        $$ = pt_create_branch (nodes, 3);
+                        $$ = pt_create_branch ("assignment", nodes, 3);
                 }
 
         | SET VAR ID TO STRING
@@ -221,9 +252,12 @@ assignment
                         /* Get the symbol table entry for the variable. */
                         struct st_rec *var = st_lookup (st_stack_top, $3->txt);
                         if (!var) {
-                               var = calloc (1, ST_REC_SIZE);
-                               var->name = strdup ($3->txt);
-                               st_insert (st_stack_top, var);
+                                /* TODO Avoid potential buffer overflow. */
+                                char strerror[128] = "the following variable "
+                                                "has not been declared: ";
+                                strcat (strerror, $3->txt);
+                                yyerror (strerror);
+                                return;
                         }
 
                         if (var->type && var->type != TYPE_STRVAR) {
@@ -236,13 +270,12 @@ assignment
                                 yyerror (strerror);
                                 return;
                         }
-
-                        /* Update the symbol table. */
-                        st_settype (var, TYPE_STRVAR);
-                        var->value = pt_collapse_branch ($5);
+                        else {
+                                st_settype (var, TYPE_STRVAR);
+                        }
 
                         struct tnode *nodes[] = {$3, $4, $5};
-                        $$ = pt_create_branch (nodes, 3);
+                        $$ = pt_create_branch ("assignment", nodes, 3);
                 }
         ;
 
@@ -259,7 +292,7 @@ if
                         clbr->txt = strdup (")");
 
                         struct tnode *nodes[] = {$1, opbr, $2, clbr, $3, $4, $5};
-                        $$ = pt_create_branch (nodes, 7);
+                        $$ = pt_create_branch ("if", nodes, 7);
                 }
 
         | IF expr THEN stmtlist ELSE stmtlist END
@@ -272,7 +305,7 @@ if
                         clbr->txt = strdup (")");
 
                         struct tnode *nodes[] = {$1, opbr, $2, clbr, $3, $4, $5, $6, $7};
-                        $$ = pt_create_branch (nodes, 9);
+                        $$ = pt_create_branch ("if", nodes, 9);
                 }
         ;
 
@@ -282,7 +315,7 @@ while
         : WHILE expr DO stmtlist END
                 {
                         struct tnode *nodes[] = {$1, $2, $3, $4, $5};
-                        $$ = pt_create_branch (nodes, 5);
+                        $$ = pt_create_branch ("while", nodes, 5);
                 }
         ;
 
@@ -292,79 +325,79 @@ expr
         : expr PLUS expr
                 {
                         struct tnode *nodes[] = {$1, $2, $3};
-                        $$ = pt_create_branch (nodes, 3);
+                        $$ = pt_create_branch ("expr", nodes, 3);
                 }
 
         | expr MINU expr
                 {
                         struct tnode *nodes[] = {$1, $2, $3};
-                        $$ = pt_create_branch (nodes, 3);
+                        $$ = pt_create_branch ("expr", nodes, 3);
                 }
 
         | expr MULT expr
                 {
                         struct tnode *nodes[] = {$1, $2, $3};
-                        $$ = pt_create_branch (nodes, 3);
+                        $$ = pt_create_branch ("expr", nodes, 3);
                 }
 
         | expr DIVI expr
                 {
                         struct tnode *nodes[] = {$1, $2, $3};
-                        $$ = pt_create_branch (nodes, 3);
+                        $$ = pt_create_branch ("expr", nodes, 3);
                 }
 
         | expr EQUA expr
                 {
                         struct tnode *nodes[] = {$1, $2, $3};
-                        $$ = pt_create_branch (nodes, 3);
+                        $$ = pt_create_branch ("expr", nodes, 3);
                 }
 
         | expr GT expr
                 {
                         struct tnode *nodes[] = {$1, $2, $3};
-                        $$ = pt_create_branch (nodes, 3);
+                        $$ = pt_create_branch ("expr", nodes, 3);
                 }
 
         | expr LT expr
                 {
                         struct tnode *nodes[] = {$1, $2, $3};
-                        $$ = pt_create_branch (nodes, 3);
+                        $$ = pt_create_branch ("expr", nodes, 3);
                 }
 
         | expr GOE expr
                 {
                         struct tnode *nodes[] = {$1, $2, $3};
-                        $$ = pt_create_branch (nodes, 3);
+                        $$ = pt_create_branch ("expr", nodes, 3);
                 }
 
         | expr LOE expr
                 {
                         struct tnode *nodes[] = {$1, $2, $3};
-                        $$ = pt_create_branch (nodes, 3);
+                        $$ = pt_create_branch ("expr", nodes, 3);
                 }
 
         | MINU expr %prec UMINUS
                 {
                         struct tnode *nodes[] = {$1, $2};
-                        $$ = pt_create_branch (nodes, 2);
+                        $$ = pt_create_branch ("expr", nodes, 2);
                 }
 
         | OPBR expr CLBR
                 {
                         struct tnode *nodes[] = {$1, $2, $3};
-                        $$ = pt_create_branch (nodes, 3);
+                        $$ = pt_create_branch ("expr", nodes, 3);
                 }
 
         | NUM
                 {
                         struct tnode *nodes[] = {$1};
-                        $$ = pt_create_branch (nodes, 1);
+                        $$ = pt_create_branch ("expr", nodes, 1);
                 }
 
         | ID
                 {
                         struct tnode *nodes[] = {$1};
-                        $$ = pt_create_branch (nodes, 1);
+                        $$ = pt_create_branch ("expr", nodes, 1);
                 } 
         ;
 

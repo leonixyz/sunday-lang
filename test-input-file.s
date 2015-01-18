@@ -1,4 +1,5 @@
 (
+    use variable x
     set variable x to 1 + 2
     while x > 0 do
         set variable x to x - 1
