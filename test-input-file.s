@@ -1,4 +1,4 @@
-(
+main (
     use variable x
     use variable y
     use variable returnValue
@@ -14,8 +14,8 @@
     if x = 0 then
         set variable x to 1+2+3+4+5+8+13+21
     else
-        set variable x to y
+        set variable x to y-x
     end
 
-    set variable returnValue to y - x
+    set variable returnValue to y-x
 )

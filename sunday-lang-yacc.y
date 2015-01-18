@@ -68,6 +68,7 @@ struct st *st_stack_top;
 
 /* Non-terminals. */
 %type <tnode> program 
+%type <tnode> function
 %type <tnode> block
 %type <tnode> stmtlist
 %type <tnode> stmt
@@ -98,18 +99,39 @@ struct st *st_stack_top;
 
 /* Scope of the language. */
 program
-        : block
+        : function
                 {
                         struct tnode *root = calloc (1, TNODE_SIZE);
                         struct tnode *nodes[] = {$1};
                         $$ = parse_tree->root = root = pt_create_branch ("program", nodes, 1);
                 }
         
-        | program block 
+        | program function 
                 {
                         struct tnode *root = calloc (1, TNODE_SIZE);
                         struct tnode *nodes[] = {$1, $2};
                         $$ = parse_tree->root = root = pt_create_branch ("program", nodes, 2);
+                }
+        ;
+
+
+/* Function. */
+function
+        : ID block
+                {
+                        /* Insert a new symbol table entry for the function. */
+                        struct st_rec *fun = calloc (1, ST_REC_SIZE);
+                        fun->name = strdup ($1->txt);
+                        st_insert (st_stack_top, fun);
+                        
+                        /* Set function declaration */
+                        char fdeclar_txt[256] = "void ";
+                        struct tnode *fdeclar = malloc (TNODE_SIZE);
+                        fdeclar->txt = strcat (fdeclar_txt, $1->txt); 
+                        fdeclar->txt = strcat (fdeclar_txt, " () "); 
+                        
+                        struct tnode *nodes[] = {fdeclar, $2};
+                        $$ = pt_create_branch ("function", nodes, 2);
                 }
         ;
 
@@ -235,13 +257,6 @@ assignment
                         else {
                                 st_settype (var, TYPE_NUMVAR);
                         }
-
-                        /*
-                        var->value = pt_collapse_branch ($5);
-                        $5->child = NULL;
-                        $5->next = NULL;
-                        $5->txt = var->value;
-                        */
 
                         struct tnode *nodes[] = {$3, $4, $5};
                         $$ = pt_create_branch ("assignment", nodes, 3);

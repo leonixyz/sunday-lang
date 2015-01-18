@@ -7,34 +7,31 @@ The idea is to crete a new language that gets compiled to C. This language is in
 This is an example of how the synthax should become:
 
 ```
-(
-    use variable x
-    set variable c to 10
+two_to_the[x] (
+        use variable y
+        set variable y to 1
 
-    while c > 1 do
-        set variable c to c - 1
-        print c
+        while x > 0 do
+                set variable y to y*2
+                set variable x to x-1
+        end
+
+        return y
+)
+
+main (
+        use variable exp
+        use variable result
+
+        set variable exp to 5
+        set variable result to two_to_the[exp]
+        print result
         print "\n"
-    end
 
-    if c = 1 then
-        print "countdown terminated"
-    else
-        print "an error occurred"
-    end
+        set variable exp to 10
+        set variable result to two_to_the[exp]
+        print result
+        print "\n"
 )
 
-(
-    use variable x
-    use variable y
-    use variable z
-    use variable w
-
-    set variable x to 5
-    set variable y to x+2
-    set variable z to cos(y)
-    set variable w to "hello world!"
-
-    print w
-)
 ```
