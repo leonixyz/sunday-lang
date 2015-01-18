@@ -8,9 +8,10 @@
 
 /* Symbol table entry types (defined in symbol-table.h). */
 extern const int TYPE_NOT_SET;  // 0
-extern const int TYPE_FUNCTION; // 1
-extern const int TYPE_NUMVAR;   // 2
-extern const int TYPE_STRVAR;   // 3
+extern const int TYPE_VOID;     // 1
+extern const int TYPE_INT;      // 2
+extern const int TYPE_REAL;     // 2
+extern const int TYPE_STRING;   // 3
 
 /* Size of a tnode structure (defined in parse-tree.h). */
 extern const size_t TNODE_SIZE;
@@ -42,7 +43,8 @@ struct st *st_stack_top;
 /* Terminals. */
 %token <tnode> USE
 %token <tnode> SET
-%token <tnode> VAR
+%token <tnode> INT
+%token <tnode> REAL
 %token <tnode> TO
 %token <tnode> IF
 %token <tnode> THEN
@@ -51,7 +53,8 @@ struct st *st_stack_top;
 %token <tnode> DO 
 %token <tnode> END
 %token <tnode> ID
-%token <tnode> NUM
+%token <tnode> INTN
+%token <tnode> REALN
 %token <tnode> STRING
 %token <tnode> OPBR 
 %token <tnode> CLBR
@@ -64,6 +67,7 @@ struct st *st_stack_top;
 %token <tnode> MINU
 %token <tnode> MULT
 %token <tnode> DIVI
+%token <tnode> RETURN
 
 
 /* Non-terminals. */
@@ -117,15 +121,78 @@ program
 
 /* Function. */
 function
-        : ID block
+        : INT ID block
                 {
+                        /* Check the return type is consistent. */
+                        if ($3->type != TYPE_INT) {
+                                char strerror[256] = "the following function's "
+                                        "type is not consistent with the "
+                                        "function's declaration: ";
+                                strcat (strerror, $2->txt);
+                                yyerror (strerror);
+                                return;
+                        }
+
+                        /* Insert a new symbol table entry for the function. */
+                        struct st_rec *fun = calloc (1, ST_REC_SIZE);
+                        fun->name = strdup ($2->txt);
+                        st_insert (st_stack_top, fun);
+                        
+                        /* Set function's declaration */
+                        char fdeclar_txt[256] = "int ";
+                        struct tnode *fdeclar = malloc (TNODE_SIZE);
+                        fdeclar->txt = strcat (fdeclar_txt, $2->txt); 
+                        fdeclar->txt = strcat (fdeclar_txt, " () "); 
+                        
+                        struct tnode *nodes[] = {fdeclar, $3};
+                        $$ = pt_create_branch ("function", nodes, 2);
+                }
+        | REAL ID block
+                {
+                        /* Check the return type is consistent. */
+                        if ($3->type != TYPE_REAL) {
+                                char strerror[256] = "the following function's "
+                                        "type is not consistent with the "
+                                        "function's declaration: ";
+                                strcat (strerror, $2->txt);
+                                yyerror (strerror);
+                                return;
+                        }
+
                         /* Insert a new symbol table entry for the function. */
                         struct st_rec *fun = calloc (1, ST_REC_SIZE);
                         fun->name = strdup ($1->txt);
                         st_insert (st_stack_top, fun);
                         
-                        /* Set function declaration */
-                        char fdeclar_txt[256] = "void ";
+                        /* Set function's declaration */
+                        char fdeclar_txt[256] = "double ";
+                        struct tnode *fdeclar = malloc (TNODE_SIZE);
+                        fdeclar->txt = strcat (fdeclar_txt, $1->txt); 
+                        fdeclar->txt = strcat (fdeclar_txt, " () "); 
+                        
+                        struct tnode *nodes[] = {fdeclar, $2};
+                        $$ = pt_create_branch ("function", nodes, 2);
+                }
+        
+        | STRING ID block
+                {
+                        /* Check the return type is consistent. */
+                        if ($3->type != TYPE_STRING) {
+                                char strerror[256] = "the following function's "
+                                        "type is not consistent with the "
+                                        "function's declaration: ";
+                                strcat (strerror, $2->txt);
+                                yyerror (strerror);
+                                return;
+                        }
+
+                        /* Insert a new symbol table entry for the function. */
+                        struct st_rec *fun = calloc (1, ST_REC_SIZE);
+                        fun->name = strdup ($1->txt);
+                        st_insert (st_stack_top, fun);
+                        
+                        /* Set function's declaration */
+                        char fdeclar_txt[256] = "char *";
                         struct tnode *fdeclar = malloc (TNODE_SIZE);
                         fdeclar->txt = strcat (fdeclar_txt, $1->txt); 
                         fdeclar->txt = strcat (fdeclar_txt, " () "); 
@@ -151,6 +218,7 @@ block
 
                         struct tnode *nodes[] = {$2, declarations, $3, $4};
                         $$ = pt_create_branch ("block", nodes, 4);
+                        $$->type = $3->type;
                 }
         ;
 
@@ -161,12 +229,14 @@ stmtlist
                 {
                         struct tnode *nodes[] = {$1};
                         $$ = pt_create_branch ("stmtlist", nodes, 1);
+                        $$->type = $1->type;
                 }
 
         | stmtlist stmt
                 {
                         struct tnode *nodes[] = {$1, $2};
                         $$ = pt_create_branch ("stmtlist", nodes, 2);
+                        $$->type = get_strongest_type ($1, $2);
                 }
         ;
 
@@ -210,16 +280,54 @@ stmt
                         struct tnode *nodes[] = {$1, semicolon};
                         $$ = pt_create_branch ("stmt", nodes, 2);
                 }
+
+        | RETURN expr
+                {
+                        /* Add an ending semicolon. */
+                        struct tnode *semicolon = malloc (TNODE_SIZE);
+                        semicolon->txt = ";";
+                        
+                        struct tnode *nodes[] = {$1, $2, semicolon};
+                        $$ = pt_create_branch ("stmt", nodes, 2);
+                        $$->type = $2->type;
+                }
         ;
 
 
 declarement
-        : USE VAR ID
+        : USE INT ID
                 {
                         /* Insert a new symbol table entry for the variable. */
                         struct st_rec *var = calloc (1, ST_REC_SIZE);
                         var->name = strdup ($3->txt);
                         st_insert (st_stack_top, var);
+                        st_settype (var, TYPE_INT);
+                        
+                        struct tnode *declarement = malloc (TNODE_SIZE);
+                        struct tnode *nodes[] = {declarement};
+                        $$ = pt_create_branch ("stmt", nodes, 1);
+                }
+        
+       | USE REAL ID
+                {
+                        /* Insert a new symbol table entry for the variable. */
+                        struct st_rec *var = calloc (1, ST_REC_SIZE);
+                        var->name = strdup ($3->txt);
+                        st_insert (st_stack_top, var);
+                        st_settype (var, TYPE_REAL);
+                        
+                        struct tnode *declarement = malloc (TNODE_SIZE);
+                        struct tnode *nodes[] = {declarement};
+                        $$ = pt_create_branch ("stmt", nodes, 1);
+                }
+        
+       | USE STRING ID
+                {
+                        /* Insert a new symbol table entry for the variable. */
+                        struct st_rec *var = calloc (1, ST_REC_SIZE);
+                        var->name = strdup ($3->txt);
+                        st_insert (st_stack_top, var);
+                        st_settype (var, TYPE_STRING);
                         
                         struct tnode *declarement = malloc (TNODE_SIZE);
                         struct tnode *nodes[] = {declarement};
@@ -230,66 +338,32 @@ declarement
 
 /* Assignment statement. */
 assignment
-        : SET VAR ID TO expr
+        : SET ID TO expr
                 {
                         /* Get the symbol table entry for the variable. */
-                        struct st_rec *var = st_lookup (st_stack_top, $3->txt);
+                        struct st_rec *var = st_lookup (st_stack_top, $2->txt);
                         if (!var) {
                                 /* TODO Avoid potential buffer overflow. */
                                 char strerror[128] = "the following variable "
                                                 "has not been declared: ";
-                                strcat (strerror, $3->txt);
+                                strcat (strerror, $2->txt);
                                 yyerror (strerror);
                                 return;
                         }
                         
                         /* Check that the variable was declared as a number. */
-                        if (var->type && var->type != TYPE_NUMVAR) {
+                        if (!var->type || var->type != $4->type) {
                                 /* TODO Avoid potential buffer overflow. */
-                                char strerror[256] = "the following variable "
-                                                "has been declared as a "
-                                                "string but it's used as "
-                                                "a number: ";
-                                strcat (strerror, $3->txt);
-                                yyerror (strerror);
-                                return;
-                        }
-                        else {
-                                st_settype (var, TYPE_NUMVAR);
-                        }
-
-                        struct tnode *nodes[] = {$3, $4, $5};
-                        $$ = pt_create_branch ("assignment", nodes, 3);
-                }
-
-        | SET VAR ID TO STRING
-                {
-                        /* Get the symbol table entry for the variable. */
-                        struct st_rec *var = st_lookup (st_stack_top, $3->txt);
-                        if (!var) {
-                                /* TODO Avoid potential buffer overflow. */
-                                char strerror[128] = "the following variable "
-                                                "has not been declared: ";
-                                strcat (strerror, $3->txt);
+                                char strerror[256] = "the following variable's "
+                                                "type is unconsistent with its "
+                                                "actual use: ";
+                                strcat (strerror, $2->txt);
                                 yyerror (strerror);
                                 return;
                         }
 
-                        if (var->type && var->type != TYPE_STRVAR) {
-                                /* TODO Avoid potential buffer overflow. */
-                                char strerror[256] = "the following variable "
-                                                "has been declared as a"
-                                                "number but it's used as "
-                                                "a string: ";
-                                strcat (strerror, $3->txt);
-                                yyerror (strerror);
-                                return;
-                        }
-                        else {
-                                st_settype (var, TYPE_STRVAR);
-                        }
-
-                        struct tnode *nodes[] = {$3, $4, $5};
+                        st_settype (var, $4->type);
+                        struct tnode *nodes[] = {$2, $3, $4};
                         $$ = pt_create_branch ("assignment", nodes, 3);
                 }
         ;
@@ -299,12 +373,20 @@ assignment
 if
         : IF expr THEN stmtlist END
                 {
+                        if ($2->type != TYPE_INT) {
+                                yyerror ("a test condition should only be of type integer");
+                                return;
+                        }
                         struct tnode *nodes[] = {$1, $2, $3, $4, $5};
                         $$ = pt_create_branch ("if", nodes, 5);
                 }
 
         | IF expr THEN stmtlist ELSE stmtlist END
                 {
+                        if ($2->type != TYPE_INT) {
+                                yyerror ("a test condition should only be of type integer");
+                                return;
+                        }
                         struct tnode *nodes[] = {$1, $2, $3, $4, $5, $6, $7};
                         $$ = pt_create_branch ("if", nodes, 7);
                 }
@@ -315,6 +397,10 @@ if
 while
         : WHILE expr DO stmtlist END
                 {
+                        if ($2->type != TYPE_INT) {
+                                yyerror ("a loop condition should only be of type integer");
+                                return;
+                        }
                         struct tnode *nodes[] = {$1, $2, $3, $4, $5};
                         $$ = pt_create_branch ("while", nodes, 5);
                 }
@@ -327,78 +413,115 @@ expr
                 {
                         struct tnode *nodes[] = {$1, $2, $3};
                         $$ = pt_create_branch ("expr", nodes, 3);
+                        $$->type = get_strongest_type ($1, $3);
                 }
 
         | expr MINU expr
                 {
                         struct tnode *nodes[] = {$1, $2, $3};
                         $$ = pt_create_branch ("expr", nodes, 3);
+                        $$->type = get_strongest_type ($1, $3);
                 }
 
         | expr MULT expr
                 {
                         struct tnode *nodes[] = {$1, $2, $3};
                         $$ = pt_create_branch ("expr", nodes, 3);
+                        $$->type = get_strongest_type ($1, $3);
                 }
 
         | expr DIVI expr
                 {
                         struct tnode *nodes[] = {$1, $2, $3};
                         $$ = pt_create_branch ("expr", nodes, 3);
+                        $$->type = get_strongest_type ($1, $3);
                 }
 
         | expr EQUA expr
                 {
                         struct tnode *nodes[] = {$1, $2, $3};
                         $$ = pt_create_branch ("expr", nodes, 3);
+                        $$->type = TYPE_INT;
                 }
 
         | expr GT expr
                 {
                         struct tnode *nodes[] = {$1, $2, $3};
                         $$ = pt_create_branch ("expr", nodes, 3);
+                        $$->type = TYPE_INT;
                 }
 
         | expr LT expr
                 {
                         struct tnode *nodes[] = {$1, $2, $3};
                         $$ = pt_create_branch ("expr", nodes, 3);
+                        $$->type = TYPE_INT;
                 }
 
         | expr GOE expr
                 {
                         struct tnode *nodes[] = {$1, $2, $3};
                         $$ = pt_create_branch ("expr", nodes, 3);
+                        $$->type = TYPE_INT;
                 }
 
         | expr LOE expr
                 {
                         struct tnode *nodes[] = {$1, $2, $3};
                         $$ = pt_create_branch ("expr", nodes, 3);
+                        $$->type = TYPE_INT;
                 }
 
         | MINU expr %prec UMINUS
                 {
                         struct tnode *nodes[] = {$1, $2};
                         $$ = pt_create_branch ("expr", nodes, 2);
+                        $$->type = $2->type;
                 }
 
         | OPBR expr CLBR
                 {
                         struct tnode *nodes[] = {$1, $2, $3};
                         $$ = pt_create_branch ("expr", nodes, 3);
+                        $$->type == get_strongest_type ($1, $3);        
                 }
 
-        | NUM
+        | INTN
                 {
                         struct tnode *nodes[] = {$1};
                         $$ = pt_create_branch ("expr", nodes, 1);
+                        $$->type = TYPE_INT;
+                }
+
+        | REALN
+                {
+                        struct tnode *nodes[] = {$1};
+                        $$ = pt_create_branch ("expr", nodes, 1);
+                        $$->type = TYPE_REAL;
+                }
+
+        | STRING
+                {
+                        struct tnode *nodes[] = {$1};
+                        $$ = pt_create_branch ("expr", nodes, 1);
+                        $$->type = TYPE_STRING;
                 }
 
         | ID
                 {
+                        /* Get the associated variable. */
+                        struct st_rec *var = st_lookup (st_stack_top, $1->txt);
+                        if (!var) {
+                                char strerror[256] = "the following variable "
+                                                "has not been declared: ";
+                                strcat (strerror, $1->txt);
+                                yyerror (strerror);
+                                return;
+                        } 
+
                         struct tnode *nodes[] = {$1};
                         $$ = pt_create_branch ("expr", nodes, 1);
+                        $$->type = var->type;
                 } 
         ;
 
@@ -416,7 +539,8 @@ expr
 /* Give hints about parsing errors. */
 int yyerror (const char *str)
 {
-        fprintf (stderr, "Parse error: %s\n", str);
+        fprintf (stderr, "[row:%d] Parse error: %s\n\n",
+                        yylineno, str);
         return -1;
 }
 

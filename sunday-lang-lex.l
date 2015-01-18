@@ -15,9 +15,11 @@ DIGIT   [0-9]
 LETTER  [a-zA-Z]
 
  /* Tokens without associated values */
+RETURN  return
 USE     use
+INT     integer
+REAL    real
 SET     set
-VAR     variable
 TO      to
 IF      if
 THEN    then
@@ -38,7 +40,8 @@ MULT    \*
 DIVI    \/
 
  /* Tokens with associated values */
-NUM     {DIGIT}+(\.{DIGIT}+)?
+INTN    {DIGIT}+
+REALN   {DIGIT}+\.{DIGIT}+
 ID      {LETTER}({LETTER}|{DIGIT})*
 STRING  "([^"]|\\")*"
 
@@ -56,9 +59,11 @@ STRING  "([^"]|\\")*"
  /* Tokens without associated tnode */
 {USE}    { return USE; }
 {SET}    { return SET; }
-{VAR}    { return VAR; }
  
  /* Tokens with associated tnode */
+{RETURN} { yylval.tnode = (struct tnode*) get_tnode ("return");  return RETURN;}
+{INT}    { yylval.tnode = (struct tnode*) get_tnode ("int");     return INT;   }
+{REAL}   { yylval.tnode = (struct tnode*) get_tnode ("double");  return REAL;  }
 {TO}     { yylval.tnode = (struct tnode*) get_tnode ("=");       return TO;    }
 {IF}     { yylval.tnode = (struct tnode*) get_tnode ("if (");    return IF;    }
 {THEN}   { yylval.tnode = (struct tnode*) get_tnode (") {");     return THEN;  }
@@ -79,7 +84,8 @@ STRING  "([^"]|\\")*"
 {DIVI}   { yylval.tnode = (struct tnode*) get_tnode ("/");       return DIVI;  }
 {ID}     { yylval.tnode = (struct tnode*) get_tnode (yytext);    return ID;    }
 {STRING} { yylval.tnode = (struct tnode*) get_tnode (yytext);    return STRING;}
-{NUM}    { yylval.tnode = (struct tnode*) get_tnode (yytext);    return NUM;   }
+{INTN}   { yylval.tnode = (struct tnode*) get_tnode (yytext);    return INTN;  }
+{REALN}  { yylval.tnode = (struct tnode*) get_tnode (yytext);    return REALN; }
 
 
 

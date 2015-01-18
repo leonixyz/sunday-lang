@@ -5,10 +5,10 @@
 /*---------------------------------------------------------------------------*/
 
 /* Symbol table entries types. */
-const int TYPE_NOT_SET  = 0;
-const int TYPE_FUNCTION = 1;
-const int TYPE_NUMVAR   = 2;
-const int TYPE_STRVAR   = 3;
+const int TYPE_VOID   = 0;
+const int TYPE_INT    = 1;
+const int TYPE_REAL   = 2;
+const int TYPE_STRING = 3;
 
 /* Global pointer to the top of the symbol table's stack (defined in .y). */
 extern struct st *st_stack_top;
@@ -118,12 +118,14 @@ char *st_flush ()
         struct st_rec *current = st_stack_top->first;
         while (current) {
                 /* Choose the right type identifier. */
-                if (current->type == TYPE_NUMVAR)
+                if (current->type == TYPE_VOID)
+                        strcat (out, "void ");
+                else if (current->type == TYPE_INT)
+                        strcat (out, "int ");
+                else if (current->type == TYPE_REAL)
                         strcat (out, "double ");
-                else if (current->type == TYPE_STRVAR)
-                        strcat (out, "char * ");
-                else if (current->type == TYPE_NOT_SET)
-                        continue; /* optimization! skip unused variables */
+                else if (current->type == TYPE_STRING)
+                        strcat (out, "char *");
 
                 /* Declare the variable. */
                 strcat (out, current->name);

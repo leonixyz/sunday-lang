@@ -26,6 +26,7 @@ struct ptree {
 /* A node of a parse tree */
 struct tnode {
         char *txt;
+        int type;
         struct tnode *child;
         struct tnode *next;
 };
@@ -38,8 +39,11 @@ void pt_traverse (struct ptree *t, FILE* f);
 /* Collapse a branch into a string. */
 char *pt_collapse_branch (struct tnode *n);
 
-/* Create a new branch having count-many children in an array */
+/* Create a new branch having count-many children in an array. */
 struct tnode *pt_create_branch (char *ntype, struct tnode *nodes[], int count);
+
+/* Returns the strongest type between two operands. */
+int get_strongest_type (struct tnode *n1, struct tnode *t2);
 
 
 #endif

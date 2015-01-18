@@ -1,21 +1,20 @@
-main (
-    use variable x
-    use variable y
-    use variable returnValue
+integer main (
+    use integer x
+    use integer y
 
-    set variable x to 1+2+3+5+8+13+21
-    set variable y to 1
+    set x to 1+2+3+5+8+13+21
+    set y to 1
 
     while x > 0 do
-        set variable x to x - 1
-        set variable y to y * 2
+        set x to x - 1
+        set y to y * 2
     end
 
     if x = 0 then
-        set variable x to 1+2+3+4+5+8+13+21
+        set x to 1+2+3+4+5+8+13+21
     else
-        set variable x to y-x
+        set x to y-x
     end
 
-    set variable returnValue to y-x
+    return 1
 )

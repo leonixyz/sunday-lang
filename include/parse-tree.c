@@ -57,3 +57,16 @@ struct tnode *pt_create_branch (char *ntype, struct tnode *nodes[], int size)
  
         return newroot;
 }
+
+
+/* Returns the strongest type between two operands. */
+int get_strongest_type (struct tnode *n1, struct tnode *n2)
+{
+        int t1 = n1->type;
+        int t2 = n2->type;
+        
+        if (t1 > t2)
+                return t1;
+        else
+                return t2;
+}
