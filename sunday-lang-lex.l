@@ -60,11 +60,11 @@ STRING  "([^"]|\\")*"
  
  /* Tokens with associated tnode */
 {TO}     { yylval.tnode = (struct tnode*) get_tnode ("=");       return TO;    }
-{IF}     { yylval.tnode = (struct tnode*) get_tnode ("if");      return IF;    }
-{THEN}   { yylval.tnode = (struct tnode*) get_tnode ("{");       return THEN;  }
+{IF}     { yylval.tnode = (struct tnode*) get_tnode ("if (");    return IF;    }
+{THEN}   { yylval.tnode = (struct tnode*) get_tnode (") {");     return THEN;  }
 {ELSE}   { yylval.tnode = (struct tnode*) get_tnode ("} else {");return ELSE;  }
-{WHILE}  { yylval.tnode = (struct tnode*) get_tnode ("while");   return WHILE; }
-{DO}     { yylval.tnode = (struct tnode*) get_tnode ("{");       return DO;    }
+{WHILE}  { yylval.tnode = (struct tnode*) get_tnode ("while ("); return WHILE; }
+{DO}     { yylval.tnode = (struct tnode*) get_tnode (") {");     return DO;    }
 {END}    { yylval.tnode = (struct tnode*) get_tnode ("}");       return END;   }
 {OPBR}   { yylval.tnode = (struct tnode*) get_tnode ("(");       return OPBR;  }
 {CLBR}   { yylval.tnode = (struct tnode*) get_tnode (")");       return CLBR;  }

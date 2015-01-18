@@ -284,28 +284,14 @@ assignment
 if
         : IF expr THEN stmtlist END
                 {
-                        /* Create surrounding brackets for expr. */
-                        struct tnode *opbr, *clbr;
-                        opbr = calloc (1, TNODE_SIZE);
-                        opbr->txt = strdup ("(");
-                        clbr = calloc (1, TNODE_SIZE);
-                        clbr->txt = strdup (")");
-
-                        struct tnode *nodes[] = {$1, opbr, $2, clbr, $3, $4, $5};
-                        $$ = pt_create_branch ("if", nodes, 7);
+                        struct tnode *nodes[] = {$1, $2, $3, $4, $5};
+                        $$ = pt_create_branch ("if", nodes, 5);
                 }
 
         | IF expr THEN stmtlist ELSE stmtlist END
                 {
-                        /* Create surrounding brackets for expr. */
-                        struct tnode *opbr, *clbr;
-                        opbr = calloc (1, TNODE_SIZE);
-                        opbr->txt = strdup ("(");
-                        clbr = calloc (1, TNODE_SIZE);
-                        clbr->txt = strdup (")");
-
-                        struct tnode *nodes[] = {$1, opbr, $2, clbr, $3, $4, $5, $6, $7};
-                        $$ = pt_create_branch ("if", nodes, 9);
+                        struct tnode *nodes[] = {$1, $2, $3, $4, $5, $6, $7};
+                        $$ = pt_create_branch ("if", nodes, 7);
                 }
         ;
 
