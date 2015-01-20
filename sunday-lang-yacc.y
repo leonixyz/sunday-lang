@@ -27,6 +27,9 @@ struct st_rec;
 
 /* Global pointer to the top of the stack of the symbol tables. */
 struct st *st_stack_top;
+
+/*Get the right type translated (defined later in this file).*/
+void get_type_string (char *declaration, int type);
 %}
 
 
@@ -73,6 +76,7 @@ struct st *st_stack_top;
 /* Non-terminals. */
 %type <tnode> program 
 %type <tnode> function
+%type <tnode> type
 %type <tnode> block
 %type <tnode> stmtlist
 %type <tnode> stmt
@@ -121,13 +125,13 @@ program
 
 /* Function. */
 function
-        : INT ID block
+        : type ID block
                 {
                         /* Check the return type is consistent. */
-                        if ($3->type != TYPE_INT) {
+                        if ($3->type != $1->type) {
                                 char strerror[256] = "the following function's "
-                                        "type is not consistent with the "
-                                        "function's declaration: ";
+                                        "type is not consistent with its "
+                                        "declaration: ";
                                 strcat (strerror, $2->txt);
                                 yyerror (strerror);
                                 return;
@@ -139,7 +143,8 @@ function
                         st_insert (st_stack_top, fun);
                         
                         /* Set function's declaration */
-                        char fdeclar_txt[256] = "int ";
+                        char fdeclar_txt[256];
+                        get_type_string (fdeclar_txt, $1->type);
                         struct tnode *fdeclar = malloc (TNODE_SIZE);
                         fdeclar->txt = strcat (fdeclar_txt, $2->txt); 
                         fdeclar->txt = strcat (fdeclar_txt, " () "); 
@@ -147,61 +152,33 @@ function
                         struct tnode *nodes[] = {fdeclar, $3};
                         $$ = pt_create_branch ("function", nodes, 2);
                 }
-        | REAL ID block
-                {
-                        /* Check the return type is consistent. */
-                        if ($3->type != TYPE_REAL) {
-                                char strerror[256] = "the following function's "
-                                        "type is not consistent with the "
-                                        "function's declaration: ";
-                                strcat (strerror, $2->txt);
-                                yyerror (strerror);
-                                return;
-                        }
-
-                        /* Insert a new symbol table entry for the function. */
-                        struct st_rec *fun = calloc (1, ST_REC_SIZE);
-                        fun->name = strdup ($1->txt);
-                        st_insert (st_stack_top, fun);
-                        
-                        /* Set function's declaration */
-                        char fdeclar_txt[256] = "double ";
-                        struct tnode *fdeclar = malloc (TNODE_SIZE);
-                        fdeclar->txt = strcat (fdeclar_txt, $1->txt); 
-                        fdeclar->txt = strcat (fdeclar_txt, " () "); 
-                        
-                        struct tnode *nodes[] = {fdeclar, $2};
-                        $$ = pt_create_branch ("function", nodes, 2);
-                }
-        
-        | STRING ID block
-                {
-                        /* Check the return type is consistent. */
-                        if ($3->type != TYPE_STRING) {
-                                char strerror[256] = "the following function's "
-                                        "type is not consistent with the "
-                                        "function's declaration: ";
-                                strcat (strerror, $2->txt);
-                                yyerror (strerror);
-                                return;
-                        }
-
-                        /* Insert a new symbol table entry for the function. */
-                        struct st_rec *fun = calloc (1, ST_REC_SIZE);
-                        fun->name = strdup ($1->txt);
-                        st_insert (st_stack_top, fun);
-                        
-                        /* Set function's declaration */
-                        char fdeclar_txt[256] = "char *";
-                        struct tnode *fdeclar = malloc (TNODE_SIZE);
-                        fdeclar->txt = strcat (fdeclar_txt, $1->txt); 
-                        fdeclar->txt = strcat (fdeclar_txt, " () "); 
-                        
-                        struct tnode *nodes[] = {fdeclar, $2};
-                        $$ = pt_create_branch ("function", nodes, 2);
-                }
         ;
 
+
+/* Types. */
+type
+        : INT
+                {       
+                        struct tnode *nodes[] = {$1};
+                        $$ = pt_create_branch ("type", nodes, 1);
+                        $$->type = TYPE_INT;
+                }
+
+        | REAL
+                {
+                        struct tnode *nodes[] = {$1};
+                        $$ = pt_create_branch ("type", nodes, 1);
+                        $$->type = TYPE_REAL;
+                }
+
+        | STRING
+                {
+                        struct tnode *nodes[] = {$1};
+                        $$ = pt_create_branch ("type", nodes, 1);
+                        $$->type = TYPE_STRING;
+                }
+        ;
+                
 
 /* Code block. */
 block
@@ -540,6 +517,20 @@ expr
 
 
 #include "lex.yy.c"
+
+
+/* Get the right type declaration. */
+void get_type_string (char *declaration, int type)
+{
+        if (type == TYPE_INT)
+                strcpy (declaration, "int ");
+        else if (type == TYPE_REAL)
+                strcpy (declaration, "double ");
+        else if (type == TYPE_STRING)
+                strcpy (declaration, "char* ");
+        else
+                strcpy (declaration, "void ");
+}
 
 
 /* Give hints about parsing errors. */
