@@ -272,40 +272,18 @@ stmt
 
 
 declarement
-        : USE INT ID
+        : USE type ID
                 {
                         /* Insert a new symbol table entry for the variable. */
                         struct st_rec *var = calloc (1, ST_REC_SIZE);
                         var->name = strdup ($3->txt);
                         st_insert (st_stack_top, var);
-                        st_settype (var, TYPE_INT);
+                        st_settype (var, $2->type);
                         
-                        struct tnode *declarement = malloc (TNODE_SIZE);
-                        struct tnode *nodes[] = {declarement};
-                        $$ = pt_create_branch ("stmt", nodes, 1);
-                }
-        
-       | USE REAL ID
-                {
-                        /* Insert a new symbol table entry for the variable. */
-                        struct st_rec *var = calloc (1, ST_REC_SIZE);
-                        var->name = strdup ($3->txt);
-                        st_insert (st_stack_top, var);
-                        st_settype (var, TYPE_REAL);
-                        
-                        struct tnode *declarement = malloc (TNODE_SIZE);
-                        struct tnode *nodes[] = {declarement};
-                        $$ = pt_create_branch ("stmt", nodes, 1);
-                }
-        
-       | USE STRING ID
-                {
-                        /* Insert a new symbol table entry for the variable. */
-                        struct st_rec *var = calloc (1, ST_REC_SIZE);
-                        var->name = strdup ($3->txt);
-                        st_insert (st_stack_top, var);
-                        st_settype (var, TYPE_STRING);
-                        
+                        /* An empty node is added to the parse tree because
+                         * the actual declarations are automatically generated
+                         * at the beginning of the scope during the reduction 
+                         * of the related code fragment. */
                         struct tnode *declarement = malloc (TNODE_SIZE);
                         struct tnode *nodes[] = {declarement};
                         $$ = pt_create_branch ("stmt", nodes, 1);
