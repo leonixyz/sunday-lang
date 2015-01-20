@@ -288,7 +288,7 @@ stmt
                         semicolon->txt = ";";
                         
                         struct tnode *nodes[] = {$1, $2, semicolon};
-                        $$ = pt_create_branch ("stmt", nodes, 2);
+                        $$ = pt_create_branch ("stmt", nodes, 3);
                         $$->type = $2->type;
                 }
         ;
@@ -395,14 +395,20 @@ if
 
 /* While loop. */
 while
-        : WHILE expr DO stmtlist END
+        : { st_push (); } WHILE expr DO stmtlist END
                 {
-                        if ($2->type != TYPE_INT) {
+                        if ($3->type != TYPE_INT) {
                                 yyerror ("a loop condition should only be of type integer");
                                 return;
                         }
-                        struct tnode *nodes[] = {$1, $2, $3, $4, $5};
-                        $$ = pt_create_branch ("while", nodes, 5);
+                        
+                        /* Allocate a new node containing all declarations. */
+                        struct tnode *declarations = malloc (TNODE_SIZE);
+                        declarations->txt = st_flush ();
+                        st_pop ();
+                        
+                        struct tnode *nodes[] = {$2, $3, $4, declarations, $5, $6};
+                        $$ = pt_create_branch ("while", nodes, 6);
                 }
         ;
 

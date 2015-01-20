@@ -6,8 +6,17 @@ integer main (
     set y to 1
 
     while x > 0 do
+        use integer z
+        set z to x 
+
+        while y < x do
+            use integer z
+            set z to x-y
+            set y to y+1
+        end
+
         set x to x - 1
-        set y to y * 2
+        set y to 1
     end
 
     if x = 0 then
