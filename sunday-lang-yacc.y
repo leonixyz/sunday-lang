@@ -55,12 +55,14 @@ void get_type_string (char *declaration, int type);
 %token <tnode> WHILE
 %token <tnode> DO 
 %token <tnode> END
+%token <tnode> STRING
 %token <tnode> ID
 %token <tnode> INTN
 %token <tnode> REALN
-%token <tnode> STRING
 %token <tnode> OPBR 
 %token <tnode> CLBR
+%token <tnode> OPSQBR 
+%token <tnode> CLSQBR
 %token <tnode> EQUA
 %token <tnode> GT
 %token <tnode> LT
@@ -80,6 +82,8 @@ void get_type_string (char *declaration, int type);
 %type <tnode> block
 %type <tnode> stmtlist
 %type <tnode> stmt
+%type <tnode> functioncall
+%type <tnode> arguments
 %type <tnode> declarement
 %type <tnode> assignment
 %type <tnode> if
@@ -259,6 +263,16 @@ stmt
                         $$ = pt_create_branch ("stmt", nodes, 2);
                 }
 
+        | functioncall
+                {
+                        /* Add an ending semicolon. */
+                        struct tnode *semicolon = malloc (TNODE_SIZE);
+                        semicolon->txt = ";";
+
+                        struct tnode *nodes[] = {$1, semicolon};
+                        $$ = pt_create_branch ("stmt", nodes, 2);
+                }
+
         | RETURN expr
                 {
                         /* Add an ending semicolon. */
@@ -272,6 +286,40 @@ stmt
         ;
 
 
+/* Call to an arbitrary native C function. */
+functioncall
+        : ID OPSQBR arguments CLSQBR
+                {
+                        /* Correct brackets symbols. */
+                        $2->txt[0] = '(';
+                        $4->txt[0] = ')';
+                        
+                        struct tnode *nodes[] = {$1, $2, $3, $4};
+                        $$ = pt_create_branch ("functioncall", nodes, 4);
+                }
+        ;
+
+
+/* Arguments in a function call. */
+arguments
+        : expr
+                {
+                        $$ = $1; 
+                }
+
+        | arguments expr
+                {
+                        /* Put commas between the arguments. */
+                        struct tnode *comma = malloc (TNODE_SIZE);
+                        comma->txt = ", ";
+
+                        struct tnode *nodes[] = {$1, comma, $2};
+                        $$ = pt_create_branch ("arguments", nodes, 3);
+                }
+        ;
+
+
+/* Variable declaration. */
 declarement
         : USE type ID
                 {
@@ -317,6 +365,8 @@ assignment
                                 yyerror (strerror);
                                 return;
                         }
+
+                        /* TODO allocate strings properly. */
 
                         st_settype (var, $4->type);
                         struct tnode *nodes[] = {$2, $3, $4};

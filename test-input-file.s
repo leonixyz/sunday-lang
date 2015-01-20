@@ -1,31 +1,25 @@
 integer main (
-    use integer x
-    use integer y
+        printf ["This is a sample program.\n"]
 
-    set x to 1+2+3+5+8+13+21
-    set y to 1
+        use integer max
+        set max to 80
+        
+        use integer x
+        set x to 1
 
-    while x > 0 do
-        use integer z
-        set z to x 
+        while x <= max do
+                use integer y
+                set y to 1
 
-        while y < x do
-            use integer z
-            set z to x-y
-            set y to y+1
+                while y <= x do
+                        printf ["#"]
+                        set y to y+1
+                end
+
+                printf["\n"]
+
+                set x to x+1
         end
 
-        set x to x - 1
-        set y to 1
-    end
-
-    if x = 0 then
-        use integer x
-        set x to 1+2+3+4+5+8+13+21
-    else
-        use integer x
-        set x to y-x
-    end
-
-    return 1
+        return 1
 )

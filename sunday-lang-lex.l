@@ -14,7 +14,7 @@ struct tnode *get_tnode (char *str);
 DIGIT   [0-9]
 LETTER  [a-zA-Z]
 
- /* Tokens without associated values */
+ /* Tokens with associated values */
 RETURN  return
 USE     use
 INT     integer
@@ -29,6 +29,8 @@ DO      do
 END     end
 OPBR    \(
 CLBR    \)
+OPSQBR  \[
+CLSQBR  \]
 EQUA    =
 GT      >
 LT      <
@@ -39,11 +41,10 @@ MINU    -
 MULT    \*
 DIVI    \/
 
- /* Tokens with associated values */
 INTN    {DIGIT}+
 REALN   {DIGIT}+\.{DIGIT}+
+STRING  L?\"(\\.|[^\\"])*\"
 ID      {LETTER}({LETTER}|{DIGIT})*
-STRING  "([^"]|\\")*"
 
 
 
@@ -73,6 +74,8 @@ STRING  "([^"]|\\")*"
 {END}    { yylval.tnode = (struct tnode*) get_tnode ("}");       return END;   }
 {OPBR}   { yylval.tnode = (struct tnode*) get_tnode ("(");       return OPBR;  }
 {CLBR}   { yylval.tnode = (struct tnode*) get_tnode (")");       return CLBR;  }
+{OPSQBR} { yylval.tnode = (struct tnode*) get_tnode ("[");       return OPSQBR;}
+{CLSQBR} { yylval.tnode = (struct tnode*) get_tnode ("]");       return CLSQBR;}
 {EQUA}   { yylval.tnode = (struct tnode*) get_tnode ("==");      return EQUA;  }
 {GT}     { yylval.tnode = (struct tnode*) get_tnode (">");       return GT;    }
 {LT}     { yylval.tnode = (struct tnode*) get_tnode ("<");       return LT;    }
