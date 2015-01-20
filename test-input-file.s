@@ -20,8 +20,10 @@ integer main (
     end
 
     if x = 0 then
+        use integer x
         set x to 1+2+3+4+5+8+13+21
     else
+        use integer x
         set x to y-x
     end
 

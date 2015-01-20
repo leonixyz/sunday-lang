@@ -1,0 +1,1186 @@
+State 30 conflicts: 1 shift/reduce
+State 36 conflicts: 1 shift/reduce
+State 63 conflicts: 1 shift/reduce
+
+
+Grammar
+
+    0 $accept: program $end
+
+    1 program: function
+    2        | program function
+
+    3 function: type ID block
+
+    4 type: INT
+    5     | REAL
+    6     | STRING
+
+    7 $@1: %empty
+
+    8 block: $@1 OPBR stmtlist CLBR
+
+    9 stmtlist: stmt
+   10         | stmtlist stmt
+
+   11 stmt: declarement
+   12     | assignment
+   13     | if
+   14     | while
+   15     | expr
+   16     | RETURN expr
+
+   17 declarement: USE type ID
+
+   18 assignment: SET ID TO expr
+
+   19 $@2: %empty
+
+   20 if: IF expr THEN $@2 stmtlist else END
+
+   21 else: %empty
+
+   22 $@3: %empty
+
+   23 else: ELSE $@3 stmtlist
+
+   24 $@4: %empty
+
+   25 while: $@4 WHILE expr DO stmtlist END
+
+   26 expr: expr PLUS expr
+   27     | expr MINU expr
+   28     | expr MULT expr
+   29     | expr DIVI expr
+   30     | expr EQUA expr
+   31     | expr GT expr
+   32     | expr LT expr
+   33     | expr GOE expr
+   34     | expr LOE expr
+   35     | MINU expr
+   36     | OPBR expr CLBR
+   37     | INTN
+   38     | REALN
+   39     | STRING
+   40     | ID
+
+
+Terminals, with rules where they appear
+
+$end (0) 0
+error (256)
+USE (258) 17
+SET (259) 18
+INT (260) 4
+REAL (261) 5
+TO (262) 18
+IF (263) 20
+THEN (264) 20
+ELSE (265) 23
+WHILE (266) 25
+DO (267) 25
+END (268) 20 25
+ID (269) 3 17 18 40
+INTN (270) 37
+REALN (271) 38
+STRING (272) 6 39
+OPBR (273) 8 36
+CLBR (274) 8 36
+EQUA (275) 30
+GT (276) 31
+LT (277) 32
+GOE (278) 33
+LOE (279) 34
+PLUS (280) 26
+MINU (281) 27 35
+MULT (282) 28
+DIVI (283) 29
+RETURN (284) 16
+UMINUS (285)
+
+
+Nonterminals, with rules where they appear
+
+$accept (31)
+    on left: 0
+program (32)
+    on left: 1 2, on right: 0 2
+function (33)
+    on left: 3, on right: 1 2
+type (34)
+    on left: 4 5 6, on right: 3 17
+block (35)
+    on left: 8, on right: 3
+$@1 (36)
+    on left: 7, on right: 8
+stmtlist (37)
+    on left: 9 10, on right: 8 10 20 23 25
+stmt (38)
+    on left: 11 12 13 14 15 16, on right: 9 10
+declarement (39)
+    on left: 17, on right: 11
+assignment (40)
+    on left: 18, on right: 12
+if (41)
+    on left: 20, on right: 13
+$@2 (42)
+    on left: 19, on right: 20
+else (43)
+    on left: 21 23, on right: 20
+$@3 (44)
+    on left: 22, on right: 23
+while (45)
+    on left: 25, on right: 14
+$@4 (46)
+    on left: 24, on right: 25
+expr (47)
+    on left: 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40, on right:
+    15 16 18 20 25 26 27 28 29 30 31 32 33 34 35 36
+
+
+State 0
+
+    0 $accept: . program $end
+
+    INT     shift, and go to state 1
+    REAL    shift, and go to state 2
+    STRING  shift, and go to state 3
+
+    program   go to state 4
+    function  go to state 5
+    type      go to state 6
+
+
+State 1
+
+    4 type: INT .
+
+    $default  reduce using rule 4 (type)
+
+
+State 2
+
+    5 type: REAL .
+
+    $default  reduce using rule 5 (type)
+
+
+State 3
+
+    6 type: STRING .
+
+    $default  reduce using rule 6 (type)
+
+
+State 4
+
+    0 $accept: program . $end
+    2 program: program . function
+
+    $end    shift, and go to state 7
+    INT     shift, and go to state 1
+    REAL    shift, and go to state 2
+    STRING  shift, and go to state 3
+
+    function  go to state 8
+    type      go to state 6
+
+
+State 5
+
+    1 program: function .
+
+    $default  reduce using rule 1 (program)
+
+
+State 6
+
+    3 function: type . ID block
+
+    ID  shift, and go to state 9
+
+
+State 7
+
+    0 $accept: program $end .
+
+    $default  accept
+
+
+State 8
+
+    2 program: program function .
+
+    $default  reduce using rule 2 (program)
+
+
+State 9
+
+    3 function: type ID . block
+
+    $default  reduce using rule 7 ($@1)
+
+    block  go to state 10
+    $@1    go to state 11
+
+
+State 10
+
+    3 function: type ID block .
+
+    $default  reduce using rule 3 (function)
+
+
+State 11
+
+    8 block: $@1 . OPBR stmtlist CLBR
+
+    OPBR  shift, and go to state 12
+
+
+State 12
+
+    8 block: $@1 OPBR . stmtlist CLBR
+
+    USE     shift, and go to state 13
+    SET     shift, and go to state 14
+    IF      shift, and go to state 15
+    ID      shift, and go to state 16
+    INTN    shift, and go to state 17
+    REALN   shift, and go to state 18
+    STRING  shift, and go to state 19
+    OPBR    shift, and go to state 20
+    MINU    shift, and go to state 21
+    RETURN  shift, and go to state 22
+
+    $default  reduce using rule 24 ($@4)
+
+    stmtlist     go to state 23
+    stmt         go to state 24
+    declarement  go to state 25
+    assignment   go to state 26
+    if           go to state 27
+    while        go to state 28
+    $@4          go to state 29
+    expr         go to state 30
+
+
+State 13
+
+   17 declarement: USE . type ID
+
+    INT     shift, and go to state 1
+    REAL    shift, and go to state 2
+    STRING  shift, and go to state 3
+
+    type  go to state 31
+
+
+State 14
+
+   18 assignment: SET . ID TO expr
+
+    ID  shift, and go to state 32
+
+
+State 15
+
+   20 if: IF . expr THEN $@2 stmtlist else END
+
+    ID      shift, and go to state 16
+    INTN    shift, and go to state 17
+    REALN   shift, and go to state 18
+    STRING  shift, and go to state 19
+    OPBR    shift, and go to state 20
+    MINU    shift, and go to state 21
+
+    expr  go to state 33
+
+
+State 16
+
+   40 expr: ID .
+
+    $default  reduce using rule 40 (expr)
+
+
+State 17
+
+   37 expr: INTN .
+
+    $default  reduce using rule 37 (expr)
+
+
+State 18
+
+   38 expr: REALN .
+
+    $default  reduce using rule 38 (expr)
+
+
+State 19
+
+   39 expr: STRING .
+
+    $default  reduce using rule 39 (expr)
+
+
+State 20
+
+   36 expr: OPBR . expr CLBR
+
+    ID      shift, and go to state 16
+    INTN    shift, and go to state 17
+    REALN   shift, and go to state 18
+    STRING  shift, and go to state 19
+    OPBR    shift, and go to state 20
+    MINU    shift, and go to state 21
+
+    expr  go to state 34
+
+
+State 21
+
+   35 expr: MINU . expr
+
+    ID      shift, and go to state 16
+    INTN    shift, and go to state 17
+    REALN   shift, and go to state 18
+    STRING  shift, and go to state 19
+    OPBR    shift, and go to state 20
+    MINU    shift, and go to state 21
+
+    expr  go to state 35
+
+
+State 22
+
+   16 stmt: RETURN . expr
+
+    ID      shift, and go to state 16
+    INTN    shift, and go to state 17
+    REALN   shift, and go to state 18
+    STRING  shift, and go to state 19
+    OPBR    shift, and go to state 20
+    MINU    shift, and go to state 21
+
+    expr  go to state 36
+
+
+State 23
+
+    8 block: $@1 OPBR stmtlist . CLBR
+   10 stmtlist: stmtlist . stmt
+
+    USE     shift, and go to state 13
+    SET     shift, and go to state 14
+    IF      shift, and go to state 15
+    ID      shift, and go to state 16
+    INTN    shift, and go to state 17
+    REALN   shift, and go to state 18
+    STRING  shift, and go to state 19
+    OPBR    shift, and go to state 20
+    CLBR    shift, and go to state 37
+    MINU    shift, and go to state 21
+    RETURN  shift, and go to state 22
+
+    $default  reduce using rule 24 ($@4)
+
+    stmt         go to state 38
+    declarement  go to state 25
+    assignment   go to state 26
+    if           go to state 27
+    while        go to state 28
+    $@4          go to state 29
+    expr         go to state 30
+
+
+State 24
+
+    9 stmtlist: stmt .
+
+    $default  reduce using rule 9 (stmtlist)
+
+
+State 25
+
+   11 stmt: declarement .
+
+    $default  reduce using rule 11 (stmt)
+
+
+State 26
+
+   12 stmt: assignment .
+
+    $default  reduce using rule 12 (stmt)
+
+
+State 27
+
+   13 stmt: if .
+
+    $default  reduce using rule 13 (stmt)
+
+
+State 28
+
+   14 stmt: while .
+
+    $default  reduce using rule 14 (stmt)
+
+
+State 29
+
+   25 while: $@4 . WHILE expr DO stmtlist END
+
+    WHILE  shift, and go to state 39
+
+
+State 30
+
+   15 stmt: expr .
+   26 expr: expr . PLUS expr
+   27     | expr . MINU expr
+   28     | expr . MULT expr
+   29     | expr . DIVI expr
+   30     | expr . EQUA expr
+   31     | expr . GT expr
+   32     | expr . LT expr
+   33     | expr . GOE expr
+   34     | expr . LOE expr
+
+    EQUA  shift, and go to state 40
+    GT    shift, and go to state 41
+    LT    shift, and go to state 42
+    GOE   shift, and go to state 43
+    LOE   shift, and go to state 44
+    PLUS  shift, and go to state 45
+    MINU  shift, and go to state 46
+    MULT  shift, and go to state 47
+    DIVI  shift, and go to state 48
+
+    MINU      [reduce using rule 15 (stmt)]
+    $default  reduce using rule 15 (stmt)
+
+
+State 31
+
+   17 declarement: USE type . ID
+
+    ID  shift, and go to state 49
+
+
+State 32
+
+   18 assignment: SET ID . TO expr
+
+    TO  shift, and go to state 50
+
+
+State 33
+
+   20 if: IF expr . THEN $@2 stmtlist else END
+   26 expr: expr . PLUS expr
+   27     | expr . MINU expr
+   28     | expr . MULT expr
+   29     | expr . DIVI expr
+   30     | expr . EQUA expr
+   31     | expr . GT expr
+   32     | expr . LT expr
+   33     | expr . GOE expr
+   34     | expr . LOE expr
+
+    THEN  shift, and go to state 51
+    EQUA  shift, and go to state 40
+    GT    shift, and go to state 41
+    LT    shift, and go to state 42
+    GOE   shift, and go to state 43
+    LOE   shift, and go to state 44
+    PLUS  shift, and go to state 45
+    MINU  shift, and go to state 46
+    MULT  shift, and go to state 47
+    DIVI  shift, and go to state 48
+
+
+State 34
+
+   26 expr: expr . PLUS expr
+   27     | expr . MINU expr
+   28     | expr . MULT expr
+   29     | expr . DIVI expr
+   30     | expr . EQUA expr
+   31     | expr . GT expr
+   32     | expr . LT expr
+   33     | expr . GOE expr
+   34     | expr . LOE expr
+   36     | OPBR expr . CLBR
+
+    CLBR  shift, and go to state 52
+    EQUA  shift, and go to state 40
+    GT    shift, and go to state 41
+    LT    shift, and go to state 42
+    GOE   shift, and go to state 43
+    LOE   shift, and go to state 44
+    PLUS  shift, and go to state 45
+    MINU  shift, and go to state 46
+    MULT  shift, and go to state 47
+    DIVI  shift, and go to state 48
+
+
+State 35
+
+   26 expr: expr . PLUS expr
+   27     | expr . MINU expr
+   28     | expr . MULT expr
+   29     | expr . DIVI expr
+   30     | expr . EQUA expr
+   31     | expr . GT expr
+   32     | expr . LT expr
+   33     | expr . GOE expr
+   34     | expr . LOE expr
+   35     | MINU expr .
+
+    $default  reduce using rule 35 (expr)
+
+
+State 36
+
+   16 stmt: RETURN expr .
+   26 expr: expr . PLUS expr
+   27     | expr . MINU expr
+   28     | expr . MULT expr
+   29     | expr . DIVI expr
+   30     | expr . EQUA expr
+   31     | expr . GT expr
+   32     | expr . LT expr
+   33     | expr . GOE expr
+   34     | expr . LOE expr
+
+    EQUA  shift, and go to state 40
+    GT    shift, and go to state 41
+    LT    shift, and go to state 42
+    GOE   shift, and go to state 43
+    LOE   shift, and go to state 44
+    PLUS  shift, and go to state 45
+    MINU  shift, and go to state 46
+    MULT  shift, and go to state 47
+    DIVI  shift, and go to state 48
+
+    MINU      [reduce using rule 16 (stmt)]
+    $default  reduce using rule 16 (stmt)
+
+
+State 37
+
+    8 block: $@1 OPBR stmtlist CLBR .
+
+    $default  reduce using rule 8 (block)
+
+
+State 38
+
+   10 stmtlist: stmtlist stmt .
+
+    $default  reduce using rule 10 (stmtlist)
+
+
+State 39
+
+   25 while: $@4 WHILE . expr DO stmtlist END
+
+    ID      shift, and go to state 16
+    INTN    shift, and go to state 17
+    REALN   shift, and go to state 18
+    STRING  shift, and go to state 19
+    OPBR    shift, and go to state 20
+    MINU    shift, and go to state 21
+
+    expr  go to state 53
+
+
+State 40
+
+   30 expr: expr EQUA . expr
+
+    ID      shift, and go to state 16
+    INTN    shift, and go to state 17
+    REALN   shift, and go to state 18
+    STRING  shift, and go to state 19
+    OPBR    shift, and go to state 20
+    MINU    shift, and go to state 21
+
+    expr  go to state 54
+
+
+State 41
+
+   31 expr: expr GT . expr
+
+    ID      shift, and go to state 16
+    INTN    shift, and go to state 17
+    REALN   shift, and go to state 18
+    STRING  shift, and go to state 19
+    OPBR    shift, and go to state 20
+    MINU    shift, and go to state 21
+
+    expr  go to state 55
+
+
+State 42
+
+   32 expr: expr LT . expr
+
+    ID      shift, and go to state 16
+    INTN    shift, and go to state 17
+    REALN   shift, and go to state 18
+    STRING  shift, and go to state 19
+    OPBR    shift, and go to state 20
+    MINU    shift, and go to state 21
+
+    expr  go to state 56
+
+
+State 43
+
+   33 expr: expr GOE . expr
+
+    ID      shift, and go to state 16
+    INTN    shift, and go to state 17
+    REALN   shift, and go to state 18
+    STRING  shift, and go to state 19
+    OPBR    shift, and go to state 20
+    MINU    shift, and go to state 21
+
+    expr  go to state 57
+
+
+State 44
+
+   34 expr: expr LOE . expr
+
+    ID      shift, and go to state 16
+    INTN    shift, and go to state 17
+    REALN   shift, and go to state 18
+    STRING  shift, and go to state 19
+    OPBR    shift, and go to state 20
+    MINU    shift, and go to state 21
+
+    expr  go to state 58
+
+
+State 45
+
+   26 expr: expr PLUS . expr
+
+    ID      shift, and go to state 16
+    INTN    shift, and go to state 17
+    REALN   shift, and go to state 18
+    STRING  shift, and go to state 19
+    OPBR    shift, and go to state 20
+    MINU    shift, and go to state 21
+
+    expr  go to state 59
+
+
+State 46
+
+   27 expr: expr MINU . expr
+
+    ID      shift, and go to state 16
+    INTN    shift, and go to state 17
+    REALN   shift, and go to state 18
+    STRING  shift, and go to state 19
+    OPBR    shift, and go to state 20
+    MINU    shift, and go to state 21
+
+    expr  go to state 60
+
+
+State 47
+
+   28 expr: expr MULT . expr
+
+    ID      shift, and go to state 16
+    INTN    shift, and go to state 17
+    REALN   shift, and go to state 18
+    STRING  shift, and go to state 19
+    OPBR    shift, and go to state 20
+    MINU    shift, and go to state 21
+
+    expr  go to state 61
+
+
+State 48
+
+   29 expr: expr DIVI . expr
+
+    ID      shift, and go to state 16
+    INTN    shift, and go to state 17
+    REALN   shift, and go to state 18
+    STRING  shift, and go to state 19
+    OPBR    shift, and go to state 20
+    MINU    shift, and go to state 21
+
+    expr  go to state 62
+
+
+State 49
+
+   17 declarement: USE type ID .
+
+    $default  reduce using rule 17 (declarement)
+
+
+State 50
+
+   18 assignment: SET ID TO . expr
+
+    ID      shift, and go to state 16
+    INTN    shift, and go to state 17
+    REALN   shift, and go to state 18
+    STRING  shift, and go to state 19
+    OPBR    shift, and go to state 20
+    MINU    shift, and go to state 21
+
+    expr  go to state 63
+
+
+State 51
+
+   20 if: IF expr THEN . $@2 stmtlist else END
+
+    $default  reduce using rule 19 ($@2)
+
+    $@2  go to state 64
+
+
+State 52
+
+   36 expr: OPBR expr CLBR .
+
+    $default  reduce using rule 36 (expr)
+
+
+State 53
+
+   25 while: $@4 WHILE expr . DO stmtlist END
+   26 expr: expr . PLUS expr
+   27     | expr . MINU expr
+   28     | expr . MULT expr
+   29     | expr . DIVI expr
+   30     | expr . EQUA expr
+   31     | expr . GT expr
+   32     | expr . LT expr
+   33     | expr . GOE expr
+   34     | expr . LOE expr
+
+    DO    shift, and go to state 65
+    EQUA  shift, and go to state 40
+    GT    shift, and go to state 41
+    LT    shift, and go to state 42
+    GOE   shift, and go to state 43
+    LOE   shift, and go to state 44
+    PLUS  shift, and go to state 45
+    MINU  shift, and go to state 46
+    MULT  shift, and go to state 47
+    DIVI  shift, and go to state 48
+
+
+State 54
+
+   26 expr: expr . PLUS expr
+   27     | expr . MINU expr
+   28     | expr . MULT expr
+   29     | expr . DIVI expr
+   30     | expr . EQUA expr
+   30     | expr EQUA expr .
+   31     | expr . GT expr
+   32     | expr . LT expr
+   33     | expr . GOE expr
+   34     | expr . LOE expr
+
+    PLUS  shift, and go to state 45
+    MINU  shift, and go to state 46
+    MULT  shift, and go to state 47
+    DIVI  shift, and go to state 48
+
+    $default  reduce using rule 30 (expr)
+
+
+State 55
+
+   26 expr: expr . PLUS expr
+   27     | expr . MINU expr
+   28     | expr . MULT expr
+   29     | expr . DIVI expr
+   30     | expr . EQUA expr
+   31     | expr . GT expr
+   31     | expr GT expr .
+   32     | expr . LT expr
+   33     | expr . GOE expr
+   34     | expr . LOE expr
+
+    PLUS  shift, and go to state 45
+    MINU  shift, and go to state 46
+    MULT  shift, and go to state 47
+    DIVI  shift, and go to state 48
+
+    $default  reduce using rule 31 (expr)
+
+
+State 56
+
+   26 expr: expr . PLUS expr
+   27     | expr . MINU expr
+   28     | expr . MULT expr
+   29     | expr . DIVI expr
+   30     | expr . EQUA expr
+   31     | expr . GT expr
+   32     | expr . LT expr
+   32     | expr LT expr .
+   33     | expr . GOE expr
+   34     | expr . LOE expr
+
+    PLUS  shift, and go to state 45
+    MINU  shift, and go to state 46
+    MULT  shift, and go to state 47
+    DIVI  shift, and go to state 48
+
+    $default  reduce using rule 32 (expr)
+
+
+State 57
+
+   26 expr: expr . PLUS expr
+   27     | expr . MINU expr
+   28     | expr . MULT expr
+   29     | expr . DIVI expr
+   30     | expr . EQUA expr
+   31     | expr . GT expr
+   32     | expr . LT expr
+   33     | expr . GOE expr
+   33     | expr GOE expr .
+   34     | expr . LOE expr
+
+    PLUS  shift, and go to state 45
+    MINU  shift, and go to state 46
+    MULT  shift, and go to state 47
+    DIVI  shift, and go to state 48
+
+    $default  reduce using rule 33 (expr)
+
+
+State 58
+
+   26 expr: expr . PLUS expr
+   27     | expr . MINU expr
+   28     | expr . MULT expr
+   29     | expr . DIVI expr
+   30     | expr . EQUA expr
+   31     | expr . GT expr
+   32     | expr . LT expr
+   33     | expr . GOE expr
+   34     | expr . LOE expr
+   34     | expr LOE expr .
+
+    PLUS  shift, and go to state 45
+    MINU  shift, and go to state 46
+    MULT  shift, and go to state 47
+    DIVI  shift, and go to state 48
+
+    $default  reduce using rule 34 (expr)
+
+
+State 59
+
+   26 expr: expr . PLUS expr
+   26     | expr PLUS expr .
+   27     | expr . MINU expr
+   28     | expr . MULT expr
+   29     | expr . DIVI expr
+   30     | expr . EQUA expr
+   31     | expr . GT expr
+   32     | expr . LT expr
+   33     | expr . GOE expr
+   34     | expr . LOE expr
+
+    MULT  shift, and go to state 47
+    DIVI  shift, and go to state 48
+
+    $default  reduce using rule 26 (expr)
+
+
+State 60
+
+   26 expr: expr . PLUS expr
+   27     | expr . MINU expr
+   27     | expr MINU expr .
+   28     | expr . MULT expr
+   29     | expr . DIVI expr
+   30     | expr . EQUA expr
+   31     | expr . GT expr
+   32     | expr . LT expr
+   33     | expr . GOE expr
+   34     | expr . LOE expr
+
+    MULT  shift, and go to state 47
+    DIVI  shift, and go to state 48
+
+    $default  reduce using rule 27 (expr)
+
+
+State 61
+
+   26 expr: expr . PLUS expr
+   27     | expr . MINU expr
+   28     | expr . MULT expr
+   28     | expr MULT expr .
+   29     | expr . DIVI expr
+   30     | expr . EQUA expr
+   31     | expr . GT expr
+   32     | expr . LT expr
+   33     | expr . GOE expr
+   34     | expr . LOE expr
+
+    $default  reduce using rule 28 (expr)
+
+
+State 62
+
+   26 expr: expr . PLUS expr
+   27     | expr . MINU expr
+   28     | expr . MULT expr
+   29     | expr . DIVI expr
+   29     | expr DIVI expr .
+   30     | expr . EQUA expr
+   31     | expr . GT expr
+   32     | expr . LT expr
+   33     | expr . GOE expr
+   34     | expr . LOE expr
+
+    $default  reduce using rule 29 (expr)
+
+
+State 63
+
+   18 assignment: SET ID TO expr .
+   26 expr: expr . PLUS expr
+   27     | expr . MINU expr
+   28     | expr . MULT expr
+   29     | expr . DIVI expr
+   30     | expr . EQUA expr
+   31     | expr . GT expr
+   32     | expr . LT expr
+   33     | expr . GOE expr
+   34     | expr . LOE expr
+
+    EQUA  shift, and go to state 40
+    GT    shift, and go to state 41
+    LT    shift, and go to state 42
+    GOE   shift, and go to state 43
+    LOE   shift, and go to state 44
+    PLUS  shift, and go to state 45
+    MINU  shift, and go to state 46
+    MULT  shift, and go to state 47
+    DIVI  shift, and go to state 48
+
+    MINU      [reduce using rule 18 (assignment)]
+    $default  reduce using rule 18 (assignment)
+
+
+State 64
+
+   20 if: IF expr THEN $@2 . stmtlist else END
+
+    USE     shift, and go to state 13
+    SET     shift, and go to state 14
+    IF      shift, and go to state 15
+    ID      shift, and go to state 16
+    INTN    shift, and go to state 17
+    REALN   shift, and go to state 18
+    STRING  shift, and go to state 19
+    OPBR    shift, and go to state 20
+    MINU    shift, and go to state 21
+    RETURN  shift, and go to state 22
+
+    $default  reduce using rule 24 ($@4)
+
+    stmtlist     go to state 66
+    stmt         go to state 24
+    declarement  go to state 25
+    assignment   go to state 26
+    if           go to state 27
+    while        go to state 28
+    $@4          go to state 29
+    expr         go to state 30
+
+
+State 65
+
+   25 while: $@4 WHILE expr DO . stmtlist END
+
+    USE     shift, and go to state 13
+    SET     shift, and go to state 14
+    IF      shift, and go to state 15
+    ID      shift, and go to state 16
+    INTN    shift, and go to state 17
+    REALN   shift, and go to state 18
+    STRING  shift, and go to state 19
+    OPBR    shift, and go to state 20
+    MINU    shift, and go to state 21
+    RETURN  shift, and go to state 22
+
+    $default  reduce using rule 24 ($@4)
+
+    stmtlist     go to state 67
+    stmt         go to state 24
+    declarement  go to state 25
+    assignment   go to state 26
+    if           go to state 27
+    while        go to state 28
+    $@4          go to state 29
+    expr         go to state 30
+
+
+State 66
+
+   10 stmtlist: stmtlist . stmt
+   20 if: IF expr THEN $@2 stmtlist . else END
+
+    USE     shift, and go to state 13
+    SET     shift, and go to state 14
+    IF      shift, and go to state 15
+    ELSE    shift, and go to state 68
+    ID      shift, and go to state 16
+    INTN    shift, and go to state 17
+    REALN   shift, and go to state 18
+    STRING  shift, and go to state 19
+    OPBR    shift, and go to state 20
+    MINU    shift, and go to state 21
+    RETURN  shift, and go to state 22
+
+    WHILE     reduce using rule 24 ($@4)
+    $default  reduce using rule 21 (else)
+
+    stmt         go to state 38
+    declarement  go to state 25
+    assignment   go to state 26
+    if           go to state 27
+    else         go to state 69
+    while        go to state 28
+    $@4          go to state 29
+    expr         go to state 30
+
+
+State 67
+
+   10 stmtlist: stmtlist . stmt
+   25 while: $@4 WHILE expr DO stmtlist . END
+
+    USE     shift, and go to state 13
+    SET     shift, and go to state 14
+    IF      shift, and go to state 15
+    END     shift, and go to state 70
+    ID      shift, and go to state 16
+    INTN    shift, and go to state 17
+    REALN   shift, and go to state 18
+    STRING  shift, and go to state 19
+    OPBR    shift, and go to state 20
+    MINU    shift, and go to state 21
+    RETURN  shift, and go to state 22
+
+    $default  reduce using rule 24 ($@4)
+
+    stmt         go to state 38
+    declarement  go to state 25
+    assignment   go to state 26
+    if           go to state 27
+    while        go to state 28
+    $@4          go to state 29
+    expr         go to state 30
+
+
+State 68
+
+   23 else: ELSE . $@3 stmtlist
+
+    $default  reduce using rule 22 ($@3)
+
+    $@3  go to state 71
+
+
+State 69
+
+   20 if: IF expr THEN $@2 stmtlist else . END
+
+    END  shift, and go to state 72
+
+
+State 70
+
+   25 while: $@4 WHILE expr DO stmtlist END .
+
+    $default  reduce using rule 25 (while)
+
+
+State 71
+
+   23 else: ELSE $@3 . stmtlist
+
+    USE     shift, and go to state 13
+    SET     shift, and go to state 14
+    IF      shift, and go to state 15
+    ID      shift, and go to state 16
+    INTN    shift, and go to state 17
+    REALN   shift, and go to state 18
+    STRING  shift, and go to state 19
+    OPBR    shift, and go to state 20
+    MINU    shift, and go to state 21
+    RETURN  shift, and go to state 22
+
+    $default  reduce using rule 24 ($@4)
+
+    stmtlist     go to state 73
+    stmt         go to state 24
+    declarement  go to state 25
+    assignment   go to state 26
+    if           go to state 27
+    while        go to state 28
+    $@4          go to state 29
+    expr         go to state 30
+
+
+State 72
+
+   20 if: IF expr THEN $@2 stmtlist else END .
+
+    $default  reduce using rule 20 (if)
+
+
+State 73
+
+   10 stmtlist: stmtlist . stmt
+   23 else: ELSE $@3 stmtlist .
+
+    USE     shift, and go to state 13
+    SET     shift, and go to state 14
+    IF      shift, and go to state 15
+    ID      shift, and go to state 16
+    INTN    shift, and go to state 17
+    REALN   shift, and go to state 18
+    STRING  shift, and go to state 19
+    OPBR    shift, and go to state 20
+    MINU    shift, and go to state 21
+    RETURN  shift, and go to state 22
+
+    WHILE     reduce using rule 24 ($@4)
+    $default  reduce using rule 23 (else)
+
+    stmt         go to state 38
+    declarement  go to state 25
+    assignment   go to state 26
+    if           go to state 27
+    while        go to state 28
+    $@4          go to state 29
+    expr         go to state 30

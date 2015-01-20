@@ -83,6 +83,7 @@ void get_type_string (char *declaration, int type);
 %type <tnode> declarement
 %type <tnode> assignment
 %type <tnode> if
+%type <tnode> else
 %type <tnode> while
 %type <tnode> expr
 
@@ -326,24 +327,41 @@ assignment
 
 /* Statement if (else)? */
 if
-        : IF expr THEN stmtlist END
+        : IF expr THEN { st_push ();} stmtlist else END
                 {
                         if ($2->type != TYPE_INT) {
                                 yyerror ("a test condition should only be of type integer");
                                 return;
                         }
-                        struct tnode *nodes[] = {$1, $2, $3, $4, $5};
-                        $$ = pt_create_branch ("if", nodes, 5);
-                }
 
-        | IF expr THEN stmtlist ELSE stmtlist END
-                {
-                        if ($2->type != TYPE_INT) {
-                                yyerror ("a test condition should only be of type integer");
-                                return;
-                        }
-                        struct tnode *nodes[] = {$1, $2, $3, $4, $5, $6, $7};
+                        /* Allocate a new node containing all declarations. */
+                        struct tnode *declarations = malloc (TNODE_SIZE);
+                        declarations->txt = st_flush ();
+                        st_pop ();
+
+                        struct tnode *nodes[] = {$1, $2, $3, declarations, $5, $6, $7};
                         $$ = pt_create_branch ("if", nodes, 7);
+                }
+        ;
+
+
+/* Optional else part of the if statement. */
+else
+        : /* Epsilon. */
+                {
+                        /* Do nothing. Allocate an empty node. */
+                        $$ = calloc (1, TNODE_SIZE);
+                }
+        
+        | ELSE { st_push ();} stmtlist
+                {
+                        /* Allocate a new node containing all declarations. */
+                        struct tnode *declarations = malloc (TNODE_SIZE);
+                        declarations->txt = st_flush ();
+                        st_pop ();
+
+                        struct tnode *nodes[] = {$1, declarations, $3};
+                        $$ = pt_create_branch ("else", nodes, 3);
                 }
         ;
 
