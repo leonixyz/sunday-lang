@@ -12,8 +12,8 @@ integer main (
                 set y to 1
 
                 while y <= x do
-                        printf ["#"]
-                        set y to y+1
+                        printf ["##"]
+                        set y to y+2
                 end
 
                 printf["\n"]

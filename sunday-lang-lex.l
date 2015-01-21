@@ -107,3 +107,10 @@ struct tnode *get_tnode (char * str)
         return n;
 }
 
+
+/* Print a help message. */
+void print_help (char *cmd)
+{
+        fprintf (stderr, "%s: Usage: %s <file.s>\n", cmd, cmd);
+}
+

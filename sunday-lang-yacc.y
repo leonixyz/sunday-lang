@@ -565,6 +565,20 @@ expr
 #include "lex.yy.c"
 
 
+/* This function shall print a minimal list of libraries to include in the C 
+ * code to let it work. */
+void get_libraries (FILE *out)
+{
+        fprintf (out, "/* This code has been generated on sunday */\n");
+        fprintf (out, "#include <stdio.h>\n");
+        fprintf (out, "#include <math.h>\n");
+        fprintf (out, "#include <ctype.h>\n");
+        fprintf (out, "#include <stdlib.h>\n");
+        fprintf (out, "#include <string.h>\n");
+        fprintf (out, "#include <time.h>\n\n");
+}
+
+
 /* Get the right type declaration. */
 void get_type_string (char *declaration, int type)
 {
@@ -587,22 +601,33 @@ int yyerror (const char *str)
         return -1;
 }
 
-
 /* Parse and print the output to destination file. */
-int main ()
+int main (int argc, char *argv[])
 {
-        /* TODO Parse input parameters to set a custom output file. */
-        FILE* outfile = stdout;
-        
+        FILE* out = fopen ("a.out.c", "w");
+
+        /* Basic error handling. */
+        if (out==NULL) {
+                fprintf (stderr, "Couldn't open output file.\n");
+                return 1;
+        }
+ 
         /* Allocate the global symbol table. */
         st_stack_top = malloc (sizeof (struct st));
 
         /* Allocate an empty parse tree. */
         parse_tree = malloc (sizeof (struct ptree));
 
+        /* Include libraries. */
+        get_libraries (out);
+
         /* Parse input. */
         yyparse ();
 
         /* Write output to file. */
-        pt_traverse (parse_tree, outfile);
+        pt_traverse (parse_tree, out);
+        fclose (out);
+
+        /* Call GCC on the target. */
+        popen ("gcc a.out.c", "r");
 }
