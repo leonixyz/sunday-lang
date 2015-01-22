@@ -3,7 +3,7 @@ integer main (
         set welcome to "This will be discarded."
         set welcome to "This is a sample program.\n"
 
-        printf ["%s\n", welcome]
+        printf ["%s\n" welcome]
 
         use integer max
         set max to 80
