@@ -145,6 +145,8 @@ char *st_flush ()
 
                 /* Declare the variable. */
                 strcat (out, current->name);
+                if (current->type == TYPE_STRING)
+                        strcat (out, " = NULL");
                 strcat (out, "; ");
 
                 current = current->next;
