@@ -601,6 +601,7 @@ int yyerror (const char *str)
         return -1;
 }
 
+
 /* Parse and print the output to destination file. */
 int main (int argc, char *argv[])
 {
