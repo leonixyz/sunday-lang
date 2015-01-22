@@ -64,6 +64,22 @@ struct st_rec *st_lookup (struct st *table, char *name)
 }
 
 
+/* Lookup for a record only in the local simbol table. */
+struct st_rec *st_lookup_local (struct st *table, char *name)
+{
+        /* Iterate over the current table. */
+        struct st_rec *current = table->first;
+        while (current){
+                if (strcmp (current->name, name) == 0)
+                        return current;
+                current = current->next;
+        }
+
+        /* The symbol wasn't in the current table. */
+        return NULL;
+}
+
+
 /* Free the memory for a given symbol table's entry. */
 void st_rec_free (struct st_rec *todelete)
 {

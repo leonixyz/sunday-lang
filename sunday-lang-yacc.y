@@ -44,9 +44,10 @@ void get_type_string (char *declaration, int type);
 
 
 /* Terminals. */
-%token <tnode> USE
+%token USE
 %token <tnode> SET
 %token <tnode> INT
+%token <tnode> STR
 %token <tnode> REAL
 %token <tnode> TO
 %token <tnode> IF
@@ -176,7 +177,7 @@ type
                         $$->type = TYPE_REAL;
                 }
 
-        | STRING
+        | STR
                 {
                         struct tnode *nodes[] = {$1};
                         $$ = pt_create_branch ("type", nodes, 1);
@@ -323,8 +324,18 @@ arguments
 declarement
         : USE type ID
                 {
+                        /* Check the variable wasn't already declared before. */
+                        struct st_rec *var = st_lookup_local (st_stack_top, $3->txt);
+                        if (var) {
+                                char strerror[256] = "the following variable has been "
+                                                "already declared: ";
+                                strcat (strerror, $3->txt);
+                                yyerror (strerror);
+                                return;
+                        }
+
                         /* Insert a new symbol table entry for the variable. */
-                        struct st_rec *var = calloc (1, ST_REC_SIZE);
+                        var = calloc (1, ST_REC_SIZE);
                         var->name = strdup ($3->txt);
                         st_insert (st_stack_top, var);
                         st_settype (var, $2->type);
@@ -355,7 +366,8 @@ assignment
                                 return;
                         }
                         
-                        /* Check that the variable was declared as a number. */
+                        /* Check that the variable was declared the 
+                         * way it's used. */
                         if (!var->type || var->type != $4->type) {
                                 /* TODO Avoid potential buffer overflow. */
                                 char strerror[256] = "the following variable's "
@@ -366,11 +378,31 @@ assignment
                                 return;
                         }
 
-                        /* TODO allocate strings properly. */
+                        /*For type String, some extra effort is needed. */
+                        if (var->type == TYPE_STRING) {
+                                /* Allocate a string that will contain the 
+                                 * original one, plus some extra characters.
+                                 * 's' 't' 'r' 'd' 'u' 'p' '(' ')' '\0' */
+                                char *newstr = calloc (1, strlen ($4->child->txt)+20);
+                                strcat (newstr, "strdup(");
+                                strcat (newstr, $4->child->txt);
+                                strcat (newstr, ")");     /* '\0' 9th char */
+                                free ($4->child->txt);
+                                $4->child->txt = strdup (newstr);
+                                /* Use $1 (normally empty) for free() the
+                                 * pointer before assigning it (in case it's 
+                                 * already used). Same allocation as above. */
+                                char *newstr2 = calloc (1, strlen ($2->txt)+20);
+                                strcat (newstr2, "free(");
+                                strcat (newstr2, $2->txt);
+                                strcat (newstr2, "); ");  /* '\0' 9th char */
+                                free ($1->txt);
+                                $1->txt = strdup (newstr2);
+                        } 
 
                         st_settype (var, $4->type);
-                        struct tnode *nodes[] = {$2, $3, $4};
-                        $$ = pt_create_branch ("assignment", nodes, 3);
+                        struct tnode *nodes[] = {$1, $2, $3, $4};
+                        $$ = pt_create_branch ("assignment", nodes, 4);
                 }
         ;
 
@@ -632,3 +664,6 @@ int main (int argc, char *argv[])
         /* Call GCC on the target. */
         popen ("gcc a.out.c", "r");
 }
+
+
+int mystrlen (char *str) { return strlen (str); };

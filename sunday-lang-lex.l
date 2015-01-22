@@ -18,6 +18,7 @@ LETTER  [a-zA-Z]
 RETURN  return
 USE     use
 INT     integer
+STR     string
 REAL    real
 SET     set
 TO      to
@@ -57,13 +58,15 @@ ID      {LETTER}({LETTER}|{DIGIT})*
  /* Skip blanks and newlines */
 [ \n]    {}
 
- /* Tokens without associated tnode */
+ /* Tokens without associated tnode (not used in C). */
 {USE}    { return USE; }
-{SET}    { return SET; }
  
  /* Tokens with associated tnode */
+ /* SET = empty node (used only for free() before assigning strings). */
+{SET}    { yylval.tnode = (struct tnode*) get_tnode ("");        return SET;   }
 {RETURN} { yylval.tnode = (struct tnode*) get_tnode ("return");  return RETURN;}
 {INT}    { yylval.tnode = (struct tnode*) get_tnode ("int");     return INT;   }
+{STR}    { yylval.tnode = (struct tnode*) get_tnode ("char *");  return STR;   }
 {REAL}   { yylval.tnode = (struct tnode*) get_tnode ("double");  return REAL;  }
 {TO}     { yylval.tnode = (struct tnode*) get_tnode ("=");       return TO;    }
 {IF}     { yylval.tnode = (struct tnode*) get_tnode ("if (");    return IF;    }

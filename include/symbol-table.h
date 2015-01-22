@@ -31,6 +31,9 @@ void st_settype (struct st_rec *symbol, int type);
 /* Lookup for a record in the whole simbol table's stack. */
 struct st_rec *st_lookup (struct st *table, char *name);
 
+/* Lookup for a record only in the current simbol table. */
+struct st_rec *st_lookup_local (struct st *table, char *name);
+
 /* Free the memory for a given symbol table's entry. */
 void st_rec_free (struct st_rec *todelete);
 

@@ -1,5 +1,9 @@
 integer main (
-        printf ["This is a sample program.\n"]
+        use string welcome
+        set welcome to "This will be discarded."
+        set welcome to "This is a sample program.\n"
+
+        printf ["%s\n", welcome]
 
         use integer max
         set max to 80
